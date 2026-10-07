@@ -2,7 +2,6 @@ import { PGlite } from '@electric-sql/pglite';
 import { SqlSession } from './sql-session';
 import { InstanceCache } from './instance-cache';
 import { BrowserWorkerFactory } from './worker/browser-worker-factory';
-import { NodeWorkerFactory } from './worker/node-worker-factory';
 import { SqlWorkerClient } from './worker/sql-worker-client';
 import type { WorkerFactory } from './worker/worker-transport';
 import type { ISqlEngine, SqlEnvironmentOptions } from './types';
@@ -14,7 +13,6 @@ export * from './sql-session';
 export * from './instance-cache';
 export * from './worker/worker-transport';
 export * from './worker/worker-protocol';
-export * from './worker/node-worker-factory';
 export * from './worker/browser-worker-factory';
 export * from './worker/sql-worker-client';
 
@@ -50,12 +48,7 @@ export async function createSqlEnvironment(
     return cached;
   }
 
-  // Detecta se está rodando no navegador ou no Node
-  const factory =
-    customFactory ??
-    (typeof window !== 'undefined' && typeof Worker !== 'undefined'
-      ? new BrowserWorkerFactory()
-      : new NodeWorkerFactory());
+  const factory = customFactory ?? new BrowserWorkerFactory();
 
   const client = new SqlWorkerClient(factory, options);
   await globalWorkerCache.set(cacheKey, client);
