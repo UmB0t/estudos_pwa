@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SqlEngineProvider } from './context/SqlEngineContext';
+import { ProgressionProvider } from './context/ProgressionContext';
 import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { ExercisePage } from './pages/ExercisePage';
@@ -10,7 +11,6 @@ import type { AppView } from './types';
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
 
   const allExercises = getAllExercises();
 
@@ -29,38 +29,32 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleSuccess = () => {
-    if (selectedExerciseId) {
-      setCompletedExercises((prev) => new Set(prev).add(selectedExerciseId));
-    }
-  };
-
   return (
-    <SqlEngineProvider>
-      <div className="app-layout">
-        <Header currentView={currentView} onNavigate={setCurrentView} />
+    <ProgressionProvider>
+      <SqlEngineProvider>
+        <div className="app-layout">
+          <Header currentView={currentView} onNavigate={setCurrentView} />
 
-        <main>
-          {currentView === 'home' && (
-            <HomePage
-              onSelectExercise={handleSelectExercise}
-              completedExerciseIds={completedExercises}
-            />
-          )}
+          <main>
+            {currentView === 'home' && (
+              <HomePage
+                onSelectExercise={handleSelectExercise}
+              />
+            )}
 
-          {currentView === 'exercise' && currentExercise && (
-            <ExercisePage
-              exercise={currentExercise}
-              onBack={() => setCurrentView('home')}
-              onNext={handleNext}
-              hasNext={Boolean(nextExercise)}
-              onSuccess={handleSuccess}
-            />
-          )}
+            {currentView === 'exercise' && currentExercise && (
+              <ExercisePage
+                exercise={currentExercise}
+                onBack={() => setCurrentView('home')}
+                onNext={handleNext}
+                hasNext={Boolean(nextExercise)}
+              />
+            )}
 
-          {currentView === 'reference' && <ReferencePage />}
-        </main>
-      </div>
-    </SqlEngineProvider>
+            {currentView === 'reference' && <ReferencePage />}
+          </main>
+        </div>
+      </SqlEngineProvider>
+    </ProgressionProvider>
   );
 };

@@ -12,6 +12,7 @@
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@lab/exercise-engine": "workspace:*",
+    "@lab/progression-engine": "workspace:*",
     "@lab/shared": "workspace:*",
     "@lab/sql-engine": "workspace:*",
     "react": "19.3.0",

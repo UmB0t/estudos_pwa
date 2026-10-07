@@ -1,17 +1,15 @@
 import React from 'react';
 import type { PublicExercise } from '@lab/shared';
 import { getPublicExercises } from '../content';
+import { useProgression } from '../context/ProgressionContext';
 
 interface HomePageProps {
   onSelectExercise: (exerciseId: string) => void;
-  completedExerciseIds?: Set<string>;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({
-  onSelectExercise,
-  completedExerciseIds = new Set(),
-}) => {
+export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
   const exercises: PublicExercise[] = getPublicExercises();
+  const { stats, getExerciseProgress } = useProgression();
 
   // Agrupa os exercícios por módulo
   const modules = [
@@ -52,6 +50,19 @@ export const HomePage: React.FC<HomePageProps> = ({
           <p>
             Executado de verdade no navegador com PGlite (WASM). Validação semântica e datasets reais.
           </p>
+          {stats?.tracks['sql'] && (
+            <div className="track-progress-info">
+              <div className="track-progress-bar">
+                <div
+                  className="track-progress-fill"
+                  style={{ width: `${stats.tracks['sql'].completionPercentage}%` }}
+                />
+              </div>
+              <span className="track-progress-text">
+                {stats.tracks['sql'].completedExercises} de {stats.tracks['sql'].totalExercises} concluídos ({stats.tracks['sql'].completionPercentage}%)
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="track-card">
@@ -87,41 +98,64 @@ export const HomePage: React.FC<HomePageProps> = ({
 
         {modules.map((mod) => {
           const modExercises = exercises.filter((ex) => ex.module === mod.id);
+          const modStats = stats?.tracks['sql']?.modules[mod.id];
+          const completedCount = modStats?.completedExercises ?? 0;
+          const percentage = modStats?.completionPercentage ?? 0;
 
           return (
             <div key={mod.id} className="module-group">
-              <div className="module-title">
-                <span>📁</span>
-                <span>{mod.title}</span>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  ({modExercises.length} {modExercises.length === 1 ? 'exercício' : 'exercícios'})
-                </span>
+              <div className="module-header-row">
+                <div className="module-title">
+                  <span>📁</span>
+                  <span>{mod.title}</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    ({completedCount}/{modExercises.length} concluídos)
+                  </span>
+                </div>
+
+                <div className="module-mini-progress">
+                  <div className="progress-bar-container">
+                    <div className="progress-bar-fill" style={{ width: `${percentage}%` }} />
+                  </div>
+                  <span className="progress-percentage-label">{percentage}%</span>
+                </div>
               </div>
+
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                 {mod.description}
               </p>
 
               <div className="exercise-list">
                 {modExercises.map((ex) => {
-                  const isCompleted = completedExerciseIds.has(ex.id);
+                  const progress = getExerciseProgress(ex.id);
+                  const isCompleted = progress?.completed ?? false;
+                  const attemptsCount = progress?.attemptsCount ?? 0;
 
                   return (
                     <div
                       key={ex.id}
-                      className="exercise-item"
+                      className={`exercise-item ${isCompleted ? 'completed-item' : ''}`}
                       onClick={() => onSelectExercise(ex.id)}
                     >
                       <div>
                         <div className="exercise-item-header">
                           <span className="exercise-level">Nível {ex.level}</span>
-                          <span className={`exercise-difficulty difficulty-${ex.difficulty}`}>
-                            {ex.difficulty}
-                          </span>
+                          <div className="exercise-status-badges">
+                            {isCompleted ? (
+                              <span className="exercise-status-badge completed">
+                                ✅ Concluído
+                              </span>
+                            ) : attemptsCount > 0 ? (
+                              <span className="exercise-status-badge attempted">
+                                🟡 {attemptsCount} {attemptsCount === 1 ? 'tentativa' : 'tentativas'}
+                              </span>
+                            ) : null}
+                            <span className={`exercise-difficulty difficulty-${ex.difficulty}`}>
+                              {ex.difficulty}
+                            </span>
+                          </div>
                         </div>
-                        <div className="exercise-title">
-                          {isCompleted && <span style={{ marginRight: '0.4rem' }}>✅</span>}
-                          {ex.title}
-                        </div>
+                        <div className="exercise-title">{ex.title}</div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                           {ex.question.length > 90 ? `${ex.question.substring(0, 90)}...` : ex.question}
                         </p>

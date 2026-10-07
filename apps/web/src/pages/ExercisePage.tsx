@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { EvaluationResult, Exercise } from '@lab/shared';
 import type { SqlQueryResult } from '@lab/sql-engine';
 import { useSqlEngine } from '../context/SqlEngineContext';
+import { useProgression } from '../context/ProgressionContext';
 import { SqlEditor } from '../components/SqlEditor';
 import { ResultTable } from '../components/ResultTable';
 import { FeedbackBanner } from '../components/FeedbackBanner';
@@ -22,6 +23,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
   onSuccess,
 }) => {
   const { evaluateExercise, getDatasetPreview, status } = useSqlEngine();
+  const { recordAttempt, getExerciseProgress } = useProgression();
 
   const [code, setCode] = useState('');
   const [hintsRevealed, setHintsRevealed] = useState(0);
@@ -30,9 +32,12 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [datasetPreview, setDatasetPreview] = useState<SqlQueryResult | null>(null);
 
+  const existingProgress = getExerciseProgress(exercise.id);
+
   // Reseta o estado quando o exercício atual mudar
   useEffect(() => {
-    setCode('');
+    const saved = getExerciseProgress(exercise.id);
+    setCode(saved?.lastCode || '');
     setHintsRevealed(0);
     setShowSolution(false);
     setEvaluation(null);
@@ -43,15 +48,30 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
         setDatasetPreview(preview);
       });
     }
-  }, [exercise, getDatasetPreview]);
+  }, [exercise, getDatasetPreview, getExerciseProgress]);
 
   const handleVerify = async () => {
     if (!code.trim() || isEvaluating) return;
 
     setIsEvaluating(true);
+    const startTime = performance.now();
     try {
       const res = await evaluateExercise(exercise, code);
+      const executionTimeMs = Math.round(performance.now() - startTime);
       setEvaluation(res);
+
+      // Registra a tentativa no progression engine
+      await recordAttempt({
+        exerciseId: exercise.id,
+        trackId: exercise.track,
+        moduleId: exercise.module,
+        code,
+        status: res.status,
+        isSuccess: res.status === 'correct',
+        executionTimeMs,
+        hintsViewed: hintsRevealed,
+      });
+
       if (res.status === 'correct' && onSuccess) {
         onSuccess();
       }
@@ -70,6 +90,12 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     setShowSolution(true);
   };
 
+  const handleRestoreLastCode = () => {
+    if (existingProgress?.lastCode) {
+      setCode(existingProgress.lastCode);
+    }
+  };
+
   return (
     <div className="split-view-container">
       {/* PAINEL ESQUERDO: Enunciado, Dataset de Exemplo, Dicas e Explicação */}
@@ -78,14 +104,25 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           <span className="back-link" onClick={onBack}>
             ← Voltar para todos os exercícios
           </span>
-          <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>
-            {exercise.difficulty}
-          </span>
+          <div className="exercise-badges-group">
+            {existingProgress?.completed && (
+              <span className="badge-completed-pill">✅ Concluído</span>
+            )}
+            <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>
+              {exercise.difficulty}
+            </span>
+          </div>
         </div>
 
         <div className="exercise-heading">
           <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
             MÓDULO: {exercise.module.toUpperCase()} • NÍVEL {exercise.level}
+            {existingProgress && existingProgress.attemptsCount > 0 && (
+              <span style={{ marginLeft: '0.75rem', color: 'var(--accent-primary)' }}>
+                • {existingProgress.attemptsCount}{' '}
+                {existingProgress.attemptsCount === 1 ? 'tentativa registrada' : 'tentativas registradas'}
+              </span>
+            )}
           </div>
           <h1>{exercise.title}</h1>
         </div>
@@ -168,6 +205,12 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
             {!showSolution && (
               <button className="btn btn-outline" onClick={handleShowAnswer}>
                 Mostrar resposta
+              </button>
+            )}
+
+            {existingProgress?.lastCode && existingProgress.lastCode !== code && (
+              <button className="btn btn-outline" onClick={handleRestoreLastCode} title="Restaurar código da última tentativa">
+                Restaurar código
               </button>
             )}
           </div>

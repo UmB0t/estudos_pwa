@@ -193,6 +193,9 @@ importers:
       '@lab/exercise-engine':
         specifier: workspace:*
         version: link:../../packages/exercise-engine
+      '@lab/progression-engine':
+        specifier: workspace:*
+        version: link:../../packages/progression-engine
       '@lab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -261,6 +264,9 @@ importers:
       '@lab/shared':
         specifier: workspace:*
         version: link:../shared
+      zod:
+        specifier: 3.24.2
+        version: 3.24.2
     devDependencies:
       typescript:
         specifier: 5.7.3
