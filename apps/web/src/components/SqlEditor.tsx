@@ -44,20 +44,27 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   };
 
   return (
-    <div className="editor-container">
-      <div className="editor-toolbar">
-        <span className="editor-title">Editor SQL (PostgreSQL)</span>
-        <span className="shortcut-hint">
-          Pressione <span className="shortcut-key">Ctrl+Enter</span> para verificar
-        </span>
+    <div className="terminal-container">
+      <div className="terminal-header">
+        <div className="terminal-dots">
+          <span className="dot dot-red" />
+          <span className="dot dot-yellow" />
+          <span className="dot dot-green" />
+        </div>
+        <div className="terminal-title">
+          <span>psql (PostgreSQL 16 · PGlite WASM)</span>
+        </div>
+        <div className="terminal-hint">
+          <kbd className="kbd-key">Ctrl</kbd>+<kbd className="kbd-key">Enter</kbd>
+        </div>
       </div>
       <textarea
         ref={textareaRef}
-        className="sql-textarea"
+        className="terminal-textarea"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Escreva sua consulta SQL aqui (ex.: SELECT * FROM alunos;)..."
+        placeholder="-- Digite sua consulta SQL aqui&#10;SELECT * FROM alunos;&#10;"
         disabled={disabled}
         spellCheck={false}
       />

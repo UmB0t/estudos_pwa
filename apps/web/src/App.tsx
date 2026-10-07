@@ -29,11 +29,23 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleNavigate = (view: AppView, sectionId?: string) => {
+    setCurrentView(view);
+    if (sectionId) {
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+    }
+  };
+
   return (
     <ProgressionProvider>
       <SqlEngineProvider>
         <div className="app-layout">
-          <Header currentView={currentView} onNavigate={setCurrentView} />
+          <Header currentView={currentView} onNavigate={handleNavigate} />
 
           <main>
             {currentView === 'home' && (

@@ -11,52 +11,56 @@ export const ResultTable: React.FC<ResultTableProps> = ({ data, title }) => {
 
   if (columns.length === 0 && rows.length === 0) {
     return (
-      <div className="table-wrapper">
-        <div className="empty-results">Nenhuma linha retornada pela consulta.</div>
+      <div className="table-card">
+        <div className="table-empty">Nenhum registro retornado pela consulta.</div>
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: '0.75rem' }}>
+    <div className="table-section-wrap">
       {title && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-          <span className="section-subtitle">{title}</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+        <div className="table-header-meta">
+          <span className="table-title-label">{title}</span>
+          <span className="table-count-badge">
             {rows.length} {rows.length === 1 ? 'linha' : 'linhas'}
           </span>
         </div>
       )}
-      <div className="table-wrapper">
+      <div className="table-card">
         {rows.length === 0 ? (
-          <div className="empty-results">Nenhuma linha retornada pela consulta.</div>
+          <div className="table-empty">0 linhas retornadas pela instrução SQL.</div>
         ) : (
-          <table className="sql-table">
-            <thead>
-              <tr>
-                {columns.map((col, idx) => (
-                  <th key={idx}>{col}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rIdx) => (
-                <tr key={rIdx}>
-                  {row.map((cell, cIdx) => (
-                    <td key={cIdx}>
-                      {cell === null || cell === undefined ? (
-                        <span className="null-badge">NULL</span>
-                      ) : typeof cell === 'boolean' ? (
-                        cell ? 'TRUE' : 'FALSE'
-                      ) : (
-                        String(cell)
-                      )}
-                    </td>
+          <div className="table-scroll">
+            <table className="vetor-sql-table">
+              <thead>
+                <tr>
+                  {columns.map((col, idx) => (
+                    <th key={idx}>
+                      <span className="col-name">{col}</span>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((row, rIdx) => (
+                  <tr key={rIdx}>
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx}>
+                        {cell === null || cell === undefined ? (
+                          <span className="null-tag">NULL</span>
+                        ) : typeof cell === 'boolean' ? (
+                          <span className="bool-tag">{cell ? 'TRUE' : 'FALSE'}</span>
+                        ) : (
+                          <span className="cell-val">{String(cell)}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

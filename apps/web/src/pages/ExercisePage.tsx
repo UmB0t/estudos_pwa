@@ -98,82 +98,89 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
 
   return (
     <div className="split-view-container">
-      {/* PAINEL ESQUERDO: Enunciado, Dataset de Exemplo, Dicas e Explicação */}
-      <div className="left-panel">
-        <div className="exercise-meta">
-          <span className="back-link" onClick={onBack}>
-            ← Voltar para todos os exercícios
-          </span>
-          <div className="exercise-badges-group">
+      {/* PAINEL ESQUERDO: Enunciado, Dataset de Exemplo, Dicas e Explicação Pedagógica */}
+      <div className="exercise-left-panel">
+        <div className="panel-top-nav">
+          <button className="breadcrumb-btn" onClick={onBack}>
+            ← Voltar ao Painel
+          </button>
+          <div className="exercise-header-badges">
             {existingProgress?.completed && (
-              <span className="badge-completed-pill">✅ Concluído</span>
+              <span className="badge-ok-pill">✅ Concluído</span>
             )}
-            <span className={`exercise-difficulty difficulty-${exercise.difficulty}`}>
+            <span className={`difficulty-tag difficulty-${exercise.difficulty}`}>
               {exercise.difficulty}
             </span>
           </div>
         </div>
 
-        <div className="exercise-heading">
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-            MÓDULO: {exercise.module.toUpperCase()} • NÍVEL {exercise.level}
+        <div className="exercise-title-section">
+          <div className="exercise-sub-tag">
+            <span>TRILHA: {exercise.track.toUpperCase()}</span>
+            <span>•</span>
+            <span>MÓDULO: {exercise.module.toUpperCase()}</span>
+            <span>•</span>
+            <span>NÍVEL {exercise.level}</span>
             {existingProgress && existingProgress.attemptsCount > 0 && (
-              <span style={{ marginLeft: '0.75rem', color: 'var(--accent-primary)' }}>
-                • {existingProgress.attemptsCount}{' '}
-                {existingProgress.attemptsCount === 1 ? 'tentativa registrada' : 'tentativas registradas'}
-              </span>
+              <>
+                <span>•</span>
+                <span className="attempts-indicator">
+                  {existingProgress.attemptsCount}{' '}
+                  {existingProgress.attemptsCount === 1 ? 'tentativa' : 'tentativas'}
+                </span>
+              </>
             )}
           </div>
-          <h1>{exercise.title}</h1>
+          <h1 className="exercise-h1">{exercise.title}</h1>
         </div>
 
-        <div className="question-box">
-          <p>{exercise.question}</p>
+        <div className="question-card">
+          <h3 className="question-label">Tarefa a Realizar:</h3>
+          <p className="question-text">{exercise.question}</p>
         </div>
 
         {/* Tabela de exemplo do dataset */}
         {datasetPreview && (
-          <div className="dataset-preview-section">
+          <div className="dataset-section">
             <ResultTable
               data={datasetPreview}
-              title={`Exemplo de Dados: Tabela "${exercise.dataset ?? 'dados'}"`}
+              title={`Esquema & Dados da Tabela: "${exercise.dataset ?? 'dados'}"`}
             />
           </div>
         )}
 
-        {/* Seção de Dicas reveladas */}
+        {/* Dicas Reveladas */}
         {hintsRevealed > 0 && (
-          <div className="hint-box">
-            <h4>💡 Dicas ({hintsRevealed}/{exercise.hints.length}):</h4>
+          <div className="hints-container">
+            <h4 className="hints-title">💡 Dicas Reveladas ({hintsRevealed}/{exercise.hints.length}):</h4>
             {exercise.hints.slice(0, hintsRevealed).map((hint, idx) => (
-              <p key={idx} style={{ marginBottom: '0.4rem', fontSize: '0.9rem' }}>
-                <strong>{idx + 1}.</strong> {hint}
-              </p>
+              <div key={idx} className="hint-item">
+                <span className="hint-num">{idx + 1}</span>
+                <p className="hint-text">{hint}</p>
+              </div>
             ))}
           </div>
         )}
 
-        {/* Gabarito / Soluções exibidas sob demanda */}
+        {/* Gabarito / Resposta de Referência */}
         {showSolution && (
-          <div className="solution-box">
-            <h4>🔑 Resposta de Referência:</h4>
-            <div className="code-snippet">{exercise.solutions[0]}</div>
+          <div className="solution-container">
+            <h4 className="solution-title">🔑 Solução de Referência:</h4>
+            <pre className="code-navy-block">{exercise.solutions[0]}</pre>
           </div>
         )}
 
-        {/* Explicação pedagógica exibida ao acertar ou revelar gabarito */}
+        {/* Explicação Pedagógica */}
         {(showSolution || evaluation?.status === 'correct') && exercise.explanation && (
-          <div className="hint-box" style={{ borderColor: 'var(--success-border)' }}>
-            <h4 style={{ color: 'var(--success)' }}>📖 Explicação Pedagógica:</h4>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-              {exercise.explanation}
-            </p>
+          <div className="explanation-container">
+            <h4 className="explanation-title">📖 Explicação Conceitual:</h4>
+            <p className="explanation-text">{exercise.explanation}</p>
           </div>
         )}
       </div>
 
-      {/* PAINEL DIREITO: Editor SQL, Botões, Feedback e Resultado da Query do Aluno */}
-      <div className="right-panel">
+      {/* PAINEL DIREITO: Terminal SQL, Barra de Ações, Banners e Resultado da Consulta */}
+      <div className="exercise-right-panel">
         <SqlEditor
           value={code}
           onChange={setCode}
@@ -182,61 +189,57 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
         />
 
         {/* Barra de Ações */}
-        <div className="action-bar">
-          <div className="action-buttons">
+        <div className="editor-action-bar">
+          <div className="action-buttons-left">
             <button
-              className="btn btn-primary"
+              className="btn btn-yel-submit"
               onClick={handleVerify}
               disabled={isEvaluating || !code.trim() || status === 'running'}
             >
-              {isEvaluating ? 'Verificando...' : 'Verificar (Ctrl+Enter)'}
+              {isEvaluating ? 'Verificando...' : 'Verificar resposta (Ctrl+Enter)'}
             </button>
 
             {exercise.hints.length > 0 && (
               <button
-                className="btn btn-secondary"
+                className="btn ghost"
                 onClick={handleRevealHint}
                 disabled={hintsRevealed >= exercise.hints.length}
               >
-                Dica ({hintsRevealed}/{exercise.hints.length})
+                💡 Dica ({hintsRevealed}/{exercise.hints.length})
               </button>
             )}
 
             {!showSolution && (
-              <button className="btn btn-outline" onClick={handleShowAnswer}>
-                Mostrar resposta
+              <button className="btn ghost" onClick={handleShowAnswer}>
+                🔑 Ver resposta
               </button>
             )}
 
             {existingProgress?.lastCode && existingProgress.lastCode !== code && (
-              <button className="btn btn-outline" onClick={handleRestoreLastCode} title="Restaurar código da última tentativa">
-                Restaurar código
+              <button className="btn ghost" onClick={handleRestoreLastCode} title="Restaurar o código da sua última tentativa">
+                ↺ Restaurar código
               </button>
             )}
           </div>
 
           {hasNext && onNext && (
             <button
-              className="btn btn-secondary"
+              className={`btn btn-next ${evaluation?.status === 'correct' ? 'highlight-next' : ''}`}
               onClick={onNext}
-              style={{
-                borderColor: evaluation?.status === 'correct' ? 'var(--success)' : undefined,
-                color: evaluation?.status === 'correct' ? 'var(--success)' : undefined,
-              }}
             >
               Próximo exercício →
             </button>
           )}
         </div>
 
-        {/* Área de Feedback e Tabela de Resultados da Consulta do Aluno */}
-        <div className="feedback-container">
+        {/* Área de Feedback e Tabela de Resultados */}
+        <div className="results-and-feedback-area">
           {evaluation && <FeedbackBanner evaluation={evaluation} />}
 
           {evaluation?.studentResult && (
             <ResultTable
               data={evaluation.studentResult}
-              title="Resultado da sua consulta SQL:"
+              title="Resultado retornado pela sua consulta:"
             />
           )}
         </div>

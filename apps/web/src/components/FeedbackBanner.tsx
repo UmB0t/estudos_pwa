@@ -9,28 +9,29 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({ evaluation }) =>
   const { status, message, error } = evaluation;
 
   const iconMap = {
-    correct: '🟢',
-    almost: '🟡',
-    wrong: '🔴',
+    correct: '🎉',
+    almost: '⚡',
+    wrong: '❌',
   };
 
   const titleMap = {
     correct: 'Excelente! Consulta Correta',
-    almost: 'Quase lá! Ajuste os Detalhes',
-    wrong: 'Resposta Incorreta',
+    almost: 'Quase lá! Pequeno ajuste necessário',
+    wrong: 'Ops! O resultado divergiu do esperado',
   };
 
   return (
-    <div className={`feedback-banner ${status}`}>
-      <span className="feedback-icon">{iconMap[status]}</span>
-      <div style={{ flex: 1 }}>
-        <strong style={{ display: 'block', marginBottom: '0.25rem' }}>
-          {titleMap[status]}
-        </strong>
-        <p className="feedback-text">{message}</p>
+    <div className={`feedback-card feedback-${status}`}>
+      <div className="feedback-icon-box">
+        <span>{iconMap[status]}</span>
+      </div>
+      <div className="feedback-body">
+        <h4 className="feedback-title">{titleMap[status]}</h4>
+        <p className="feedback-message">{message}</p>
         {error && (
-          <div className="error-details">
-            <strong>Detalhes técnicos:</strong> {error}
+          <div className="feedback-technical-error">
+            <span className="error-badge">PostgreSQL Engine</span>
+            <code>{error}</code>
           </div>
         )}
       </div>

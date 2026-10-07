@@ -6,7 +6,7 @@ import { ProfileModal } from './ProfileModal';
 
 interface HeaderProps {
   currentView: AppView;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, sectionId?: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
@@ -14,39 +14,72 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
   const { currentProfile, stats } = useProgression();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  const handleNavClick = (view: AppView, sectionId?: string) => {
+    onNavigate(view, sectionId);
+    if (sectionId && (currentView === 'home' || view === 'home')) {
+      // Smooth scroll if already on home or navigating to home
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+    }
+  };
+
   return (
     <>
       <header className="app-header">
-        <div className="brand" onClick={() => onNavigate('home')}>
-          <span className="brand-icon">🐘🐧</span>
-          <span>SQL &amp; Linux Lab</span>
-        </div>
+        <div className="header-left">
+          <div className="brand" onClick={() => handleNavClick('home')}>
+            <div className="brand-logo-badge">
+              <span className="brand-letter">V</span>
+            </div>
+            <div className="brand-text">
+              <div className="brand-name">
+                Vetor <span className="brand-sub">SQL &amp; Linux Lab</span>
+              </div>
+              <div className="brand-tagline">Laboratório de Estudos 100% Local</div>
+            </div>
+          </div>
 
-        <nav className="nav-links">
-          <button
-            className={`nav-btn ${currentView === 'home' || currentView === 'exercise' ? 'active' : ''}`}
-            onClick={() => onNavigate('home')}
-          >
-            Trilhas &amp; Exercícios
-          </button>
-          <button
-            className={`nav-btn ${currentView === 'reference' ? 'active' : ''}`}
-            onClick={() => onNavigate('reference')}
-          >
-            Material de Consulta
-          </button>
-        </nav>
+          <nav className="nav-links">
+            <button
+              className={`nav-btn ${currentView === 'home' ? 'active' : ''}`}
+              onClick={() => handleNavClick('home')}
+            >
+              Painel
+            </button>
+            <button
+              className="nav-btn"
+              onClick={() => handleNavClick('home', 'section-trilhas')}
+            >
+              Trilhas
+            </button>
+            <button
+              className="nav-btn"
+              onClick={() => handleNavClick('home', 'section-exercicios')}
+            >
+              Laboratórios
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'reference' ? 'active' : ''}`}
+              onClick={() => handleNavClick('reference')}
+            >
+              Material de Consulta
+            </button>
+          </nav>
+        </div>
 
         <div className="header-right">
           {stats && (
             <div
-              className="stats-badge"
-              title={`Progresso geral: ${stats.completedExercises} de ${stats.totalExercises} exercícios concluídos`}
+              className="streak-badge"
+              title={`Você dominou ${stats.completedExercises} de ${stats.totalExercises} exercícios (${stats.completionPercentage}%)`}
             >
-              <span className="stats-icon">🎯</span>
-              <span>
-                {stats.completedExercises}/{stats.totalExercises} ({stats.completionPercentage}%)
-              </span>
+              <span className="streak-icon">⚡</span>
+              <span className="streak-count">{stats.completedExercises}/{stats.totalExercises}</span>
+              <span className="streak-label">Dominados</span>
             </div>
           )}
 
@@ -62,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
 
           <div className={`status-badge ${status}`} title={statusMessage}>
             <span className="status-dot" />
-            <span>{statusMessage}</span>
+            <span className="status-text">{statusMessage}</span>
           </div>
         </div>
       </header>
@@ -74,4 +107,3 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
     </>
   );
 };
-
