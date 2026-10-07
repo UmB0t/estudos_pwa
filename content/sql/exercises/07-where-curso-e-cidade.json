@@ -1,0 +1,22 @@
+{
+  "id": "sql-07-where-curso-e-cidade",
+  "track": "sql",
+  "module": "where",
+  "level": 2,
+  "title": "Múltiplas condições com AND",
+  "difficulty": "medium",
+  "prerequisites": ["sql-06-where-maiores-idade"],
+  "question": "Escreva uma consulta SQL para selecionar o nome, o curso e a cidade dos alunos matriculados no curso de 'Engenharia de Software' que residem na cidade de 'São Paulo'.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["where", "and", "logical-operators"],
+  "hints": [
+    "Conecte duas condições na cláusula WHERE utilizando o operador lógico AND.",
+    "Lembre-se de que literais de texto em SQL devem estar envolvidos por aspas simples, como 'São Paulo'."
+  ],
+  "solutions": [
+    "SELECT nome, curso, cidade FROM alunos WHERE curso = 'Engenharia de Software' AND cidade = 'São Paulo';",
+    "SELECT nome, curso, cidade FROM alunos WHERE cidade = 'São Paulo' AND curso = 'Engenharia de Software';"
+  ],
+  "explanation": "O operador lógico AND combina predicados garantindo que apenas as linhas que satisfazem simultaneamente a ambos os critérios sejam retornadas."
+}

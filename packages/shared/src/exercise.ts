@@ -25,3 +25,11 @@ export const ExerciseSchema = z.object({
 });
 
 export type Exercise = z.infer<typeof ExerciseSchema>;
+
+export type PublicExercise = Omit<Exercise, 'solutions'>;
+
+export function toPublicExercise(exercise: Exercise): PublicExercise {
+  const copy = { ...exercise };
+  delete (copy as Partial<Exercise>).solutions;
+  return copy as PublicExercise;
+}

@@ -1,0 +1,22 @@
+{
+  "id": "sql-02-select-nome-curso",
+  "track": "sql",
+  "module": "select",
+  "level": 2,
+  "title": "Selecionar colunas específicas",
+  "difficulty": "easy",
+  "prerequisites": ["sql-01-select-todos-alunos"],
+  "question": "Escreva uma consulta SQL para selecionar apenas as colunas nome e curso de todos os alunos.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["select", "projection"],
+  "hints": [
+    "Em vez de utilizar o asterisco (*), liste os nomes das colunas desejadas separadas por vírgula.",
+    "A estrutura recomendada é SELECT nome, curso FROM alunos;"
+  ],
+  "solutions": [
+    "SELECT nome, curso FROM alunos;",
+    "SELECT nome, curso FROM alunos"
+  ],
+  "explanation": "Especificar os nomes das colunas na cláusula SELECT garante que o banco de dados processe e retorne apenas os campos necessários, tornando a aplicação mais eficiente."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "sql-04-alias-colunas",
+  "track": "sql",
+  "module": "alias",
+  "level": 1,
+  "title": "Renomear colunas com AS",
+  "difficulty": "easy",
+  "prerequisites": ["sql-02-select-nome-curso"],
+  "question": "Escreva uma consulta SQL que selecione o nome do aluno renomeado como estudante e a idade renomeada como anos.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["alias", "as"],
+  "hints": [
+    "Utilize a cláusula AS logo após o nome original da coluna para atribuir um novo identificador.",
+    "A estrutura recomendada é SELECT nome AS estudante, idade AS anos FROM alunos;"
+  ],
+  "solutions": [
+    "SELECT nome AS estudante, idade AS anos FROM alunos;",
+    "SELECT nome AS estudante, idade AS anos FROM alunos"
+  ],
+  "explanation": "A palavra-chave AS define apelidos (aliases) para as colunas no conjunto de resultados, permitindo customizar os nomes exibidos sem alterar a estrutura da tabela física."
+}

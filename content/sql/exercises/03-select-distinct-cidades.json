@@ -1,0 +1,22 @@
+{
+  "id": "sql-03-select-distinct-cidades",
+  "track": "sql",
+  "module": "select",
+  "level": 3,
+  "title": "Listar valores distintos",
+  "difficulty": "easy",
+  "prerequisites": ["sql-02-select-nome-curso"],
+  "question": "Escreva uma consulta SQL para listar todas as cidades distintas presentes na tabela alunos, eliminando duplicidades nos resultados.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["select", "distinct"],
+  "hints": [
+    "Utilize a palavra-chave DISTINCT imediatamente após a instrução SELECT.",
+    "A estrutura esperada é SELECT DISTINCT cidade FROM alunos;"
+  ],
+  "solutions": [
+    "SELECT DISTINCT cidade FROM alunos;",
+    "SELECT DISTINCT cidade FROM alunos"
+  ],
+  "explanation": "A cláusula DISTINCT analisa os registros retornados e elimina quaisquer linhas com valores duplicados para os campos projetados."
+}

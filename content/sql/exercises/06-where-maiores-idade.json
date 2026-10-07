@@ -1,0 +1,22 @@
+{
+  "id": "sql-06-where-maiores-idade",
+  "track": "sql",
+  "module": "where",
+  "level": 1,
+  "title": "Filtrar registros com WHERE",
+  "difficulty": "easy",
+  "prerequisites": ["sql-02-select-nome-curso"],
+  "question": "Escreva uma consulta SQL para selecionar o nome e a idade apenas dos alunos que possuem 18 anos ou mais.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["where", "comparison", "filter"],
+  "hints": [
+    "Utilize a cláusula WHERE após a indicação da tabela FROM.",
+    "Para verificar maioridade, use o operador maior ou igual: WHERE idade >= 18;"
+  ],
+  "solutions": [
+    "SELECT nome, idade FROM alunos WHERE idade >= 18;",
+    "SELECT nome, idade FROM alunos WHERE idade >= 18"
+  ],
+  "explanation": "A cláusula WHERE permite restringir os resultados retornados aos registros que atendem a uma condição booleana específica (neste caso, idade >= 18)."
+}

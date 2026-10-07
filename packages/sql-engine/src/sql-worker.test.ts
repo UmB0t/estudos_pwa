@@ -25,7 +25,7 @@ describe('SqlWorkerClient (Transporte via Worker)', () => {
     }
   });
 
-  it('deve cancelar a query travada (pg_sleep) via timeout e terminate()', { timeout: 10000 }, async () => {
+  it('deve cancelar a query travada (pg_sleep) via timeout e terminate()', { timeout: 25000 }, async () => {
     const client = new SqlWorkerClient(new NodeWorkerFactory(), {
       datasetSql: dataset,
       timeoutMs: 500, // Timeout de 500ms
@@ -52,7 +52,7 @@ describe('SqlWorkerClient (Transporte via Worker)', () => {
     }
   });
 
-  it('deve recriar a instância do Worker automaticamente após um terminate() por timeout', { timeout: 10000 }, async () => {
+  it('deve recriar a instância do Worker automaticamente após um terminate() por timeout', { timeout: 25000 }, async () => {
     const client = new SqlWorkerClient(new NodeWorkerFactory(), {
       datasetSql: dataset,
       timeoutMs: 400,

@@ -1,0 +1,22 @@
+{
+  "id": "sql-01-select-todos-alunos",
+  "track": "sql",
+  "module": "select",
+  "level": 1,
+  "title": "Selecionar todos os alunos",
+  "difficulty": "easy",
+  "prerequisites": [],
+  "question": "Escreva uma consulta SQL para selecionar todas as colunas e todas as linhas da tabela alunos.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["select", "select-all"],
+  "hints": [
+    "Para selecionar todas as colunas de uma tabela, utilize o caractere asterisco (*).",
+    "A estrutura básica da instrução é SELECT * FROM nome_da_tabela;"
+  ],
+  "solutions": [
+    "SELECT * FROM alunos;",
+    "SELECT * FROM alunos"
+  ],
+  "explanation": "O comando SELECT * instrui o PostgreSQL a projetar todas as colunas existentes na tabela indicada na cláusula FROM."
+}

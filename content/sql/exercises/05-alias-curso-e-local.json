@@ -1,0 +1,22 @@
+{
+  "id": "sql-05-alias-curso-e-local",
+  "track": "sql",
+  "module": "alias",
+  "level": 2,
+  "title": "Múltiplos aliases descritivos",
+  "difficulty": "easy",
+  "prerequisites": ["sql-04-alias-colunas"],
+  "question": "Escreva uma consulta SQL que selecione o nome como nome_completo, o curso como formacao e a cidade como municipio.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["alias", "as", "naming"],
+  "hints": [
+    "Aplique a cláusula AS em cada uma das três colunas solicitadas na consulta.",
+    "A estrutura recomendada é SELECT nome AS nome_completo, curso AS formacao, cidade AS municipio FROM alunos;"
+  ],
+  "solutions": [
+    "SELECT nome AS nome_completo, curso AS formacao, cidade AS municipio FROM alunos;",
+    "SELECT nome AS nome_completo, curso AS formacao, cidade AS municipio FROM alunos"
+  ],
+  "explanation": "Atribuir aliases claros e expressivos é uma técnica comum para compatibilizar nomes de tabelas legadas com os modelos esperados pelo front-end ou relatórios."
+}

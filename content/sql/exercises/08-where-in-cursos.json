@@ -1,0 +1,22 @@
+{
+  "id": "sql-08-where-in-cursos",
+  "track": "sql",
+  "module": "where",
+  "level": 3,
+  "title": "Filtrar listas com IN",
+  "difficulty": "medium",
+  "prerequisites": ["sql-07-where-curso-e-cidade"],
+  "question": "Escreva uma consulta SQL para selecionar o nome e o curso dos alunos matriculados nos cursos de 'Ciência da Computação' ou 'Sistemas de Informação', utilizando o operador IN.",
+  "dataset": "alunos",
+  "orderMatters": false,
+  "skills": ["where", "in", "set-membership"],
+  "hints": [
+    "O operador IN testa se um determinado valor está presente dentro de uma lista especificada entre parênteses.",
+    "A estrutura recomendada é WHERE curso IN ('Ciência da Computação', 'Sistemas de Informação');"
+  ],
+  "solutions": [
+    "SELECT nome, curso FROM alunos WHERE curso IN ('Ciência da Computação', 'Sistemas de Informação');",
+    "SELECT nome, curso FROM alunos WHERE curso IN ('Sistemas de Informação', 'Ciência da Computação');"
+  ],
+  "explanation": "O operador IN verifica se o valor da coluna coincide com qualquer um dos literais listados entre parênteses, funcionando como uma alternativa elegante e concisa a múltiplos operadores OR."
+}
