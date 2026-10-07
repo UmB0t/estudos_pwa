@@ -1,0 +1,1 @@
+export const PROGRESSION_ENGINE_VERSION = '0.1.0';

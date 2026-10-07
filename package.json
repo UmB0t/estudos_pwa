@@ -1,0 +1,25 @@
+{
+  "name": "sql-linux-lab",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @lab/web dev",
+    "build": "pnpm -r run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "prettier": "3.5.3",
+    "typescript": "5.7.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "3.0.7"
+  }
+}
