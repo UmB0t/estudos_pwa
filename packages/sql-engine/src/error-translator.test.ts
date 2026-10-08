@@ -38,6 +38,13 @@ describe('error-translator', () => {
     expect(translated.code).toBe('42601');
   });
 
+  it('deve traduzir comando incompleto (syntax error at end of input)', () => {
+    const err = new Error('syntax error at end of input');
+    const translated = translateSqlError(err);
+    expect(translated.message).toContain('instrução incompleta no final do comando');
+    expect(translated.code).toBe('42601');
+  });
+
   it('deve traduzir violação de transação somente leitura (código 25006)', () => {
     const err = {
       code: '25006',

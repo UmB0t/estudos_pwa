@@ -1,0 +1,20 @@
+{
+  "id": "docker-03-logs",
+  "track": "docker",
+  "module": "diagnostico",
+  "level": 3,
+  "title": "Inspecionando Logs de Container",
+  "difficulty": "medium",
+  "prerequisites": ["docker-02-run-nginx"],
+  "question": "Inspecione os logs gerados pelo container chamado 'meu-web' utilizando o comando docker logs.",
+  "setup": "docker run -d --name meu-web nginx",
+  "orderMatters": false,
+  "skills": ["docker-logs"],
+  "hints": [
+    "Execute docker logs meu-web"
+  ],
+  "solutions": [
+    "docker logs meu-web"
+  ],
+  "explanation": "O comando docker logs exibe as mensagens emitidas na saída padrão pelo processo principal do container."
+}

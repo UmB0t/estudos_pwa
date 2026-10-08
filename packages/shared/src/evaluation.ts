@@ -13,6 +13,7 @@ export const EvaluationResultSchema = z.object({
   status: EvaluationStatusSchema,
   message: z.string(),
   studentResult: QueryResultSchema.optional(),
+  output: z.string().optional(),
   error: z.string().optional(),
 });
 

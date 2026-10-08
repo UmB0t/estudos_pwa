@@ -1,0 +1,22 @@
+{
+  "id": "linux-05-cat-grep",
+  "track": "linux",
+  "module": "inspecao",
+  "level": 5,
+  "title": "Inspeção de Conteúdo (grep)",
+  "difficulty": "medium",
+  "prerequisites": ["linux-04-touch-echo"],
+  "question": "No arquivo 'hosts.txt', busque e exiba a linha referente ao serviço 'database' utilizando o comando grep.",
+  "setup": "echo '192.168.1.10 frontend\n192.168.1.20 database\n192.168.1.30 cache' > /home/aluno/hosts.txt",
+  "orderMatters": false,
+  "skills": ["cat", "grep"],
+  "hints": [
+    "Execute grep database hosts.txt"
+  ],
+  "solutions": [
+    "grep database hosts.txt",
+    "grep \"database\" hosts.txt",
+    "grep 'database' hosts.txt"
+  ],
+  "explanation": "O comando grep busca linhas que contenham o padrão solicitado dentro do arquivo especificado."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "docker-01-ps",
+  "track": "docker",
+  "module": "containers",
+  "level": 1,
+  "title": "Listando Containers em Execução",
+  "difficulty": "easy",
+  "prerequisites": [],
+  "question": "Liste todos os containers ativos no host utilizando o comando docker ps.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["docker-ps"],
+  "hints": [
+    "Execute docker ps para visualizar os containers ativos."
+  ],
+  "solutions": [
+    "docker ps"
+  ],
+  "explanation": "docker ps lista os containers que estão em execução no momento."
+}

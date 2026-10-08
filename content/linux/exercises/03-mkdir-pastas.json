@@ -1,0 +1,22 @@
+{
+  "id": "linux-03-mkdir-pastas",
+  "track": "linux",
+  "module": "arquivos",
+  "level": 3,
+  "title": "Criando Pastas (mkdir)",
+  "difficulty": "easy",
+  "prerequisites": ["linux-02-cd-navegacao"],
+  "question": "Crie um novo diretório chamado 'projetos' na pasta pessoal do aluno.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["mkdir"],
+  "hints": [
+    "Use o comando mkdir seguido do nome da pasta: mkdir projetos"
+  ],
+  "solutions": [
+    "mkdir projetos",
+    "mkdir /home/aluno/projetos",
+    "mkdir -p projetos"
+  ],
+  "explanation": "mkdir (make directory) cria novos diretórios no sistema de arquivos."
+}

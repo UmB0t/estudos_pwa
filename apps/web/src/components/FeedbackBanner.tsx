@@ -14,23 +14,26 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({ evaluation }) =>
     wrong: '❌',
   };
 
-  const titleMap = {
-    correct: 'Excelente! Consulta Correta',
-    almost: 'Quase lá! Pequeno ajuste necessário',
-    wrong: 'Ops! O resultado divergiu do esperado',
+  const isExecutionError = status === 'wrong' && (Boolean(error) || message.toLowerCase().startsWith('erro'));
+
+  const getTitle = () => {
+    if (status === 'correct') return 'Excelente! Consulta Correta';
+    if (status === 'almost') return 'Quase lá! Pequeno ajuste necessário';
+    if (isExecutionError) return 'Atenção: Erro de Sintaxe ou Execução';
+    return 'Ops! O resultado divergiu do esperado';
   };
 
   return (
     <div className={`feedback-card feedback-${status}`}>
       <div className="feedback-icon-box">
-        <span>{iconMap[status]}</span>
+        <span>{isExecutionError ? '⚠️' : iconMap[status]}</span>
       </div>
       <div className="feedback-body">
-        <h4 className="feedback-title">{titleMap[status]}</h4>
+        <h4 className="feedback-title">{getTitle()}</h4>
         <p className="feedback-message">{message}</p>
         {error && (
           <div className="feedback-technical-error">
-            <span className="error-badge">PostgreSQL Engine</span>
+            <span className="error-badge">Detalhes Técnicos da Engine</span>
             <code>{error}</code>
           </div>
         )}

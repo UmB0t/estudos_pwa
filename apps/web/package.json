@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",
+    "@lab/docker-lab": "workspace:*",
     "@lab/exercise-engine": "workspace:*",
+    "@lab/linux-lab": "workspace:*",
+    "@lab/network-lab": "workspace:*",
     "@lab/progression-engine": "workspace:*",
     "@lab/shared": "workspace:*",
     "@lab/sql-engine": "workspace:*",

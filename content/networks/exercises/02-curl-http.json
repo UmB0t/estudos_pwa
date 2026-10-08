@@ -1,0 +1,22 @@
+{
+  "id": "networks-02-curl",
+  "track": "networks",
+  "module": "diagnostico",
+  "level": 2,
+  "title": "Requisição HTTP com cURL",
+  "difficulty": "easy",
+  "prerequisites": ["networks-01-ping"],
+  "question": "Realize uma requisição HTTP para o servidor web local (http://localhost) utilizando o cURL.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["curl", "http"],
+  "hints": [
+    "Execute curl http://localhost"
+  ],
+  "solutions": [
+    "curl http://localhost",
+    "curl http://localhost:80",
+    "curl http://127.0.0.1"
+  ],
+  "explanation": "O utilitário curl executa chamadas de rede cliente para inspecionar endpoints, cabeçalhos e respostas HTTP."
+}

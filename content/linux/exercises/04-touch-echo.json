@@ -1,0 +1,22 @@
+{
+  "id": "linux-04-touch-echo",
+  "track": "linux",
+  "module": "arquivos",
+  "level": 4,
+  "title": "Manipulação de Arquivos (touch e echo)",
+  "difficulty": "medium",
+  "prerequisites": ["linux-03-mkdir-pastas"],
+  "question": "Crie um arquivo chamado 'servidor.conf' contendo exatamente o texto 'PORT=8080' utilizando o comando echo com redirecionamento >.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["touch", "echo", "redirection"],
+  "hints": [
+    "Utilize echo 'PORT=8080' > servidor.conf para direcionar a mensagem para dentro do arquivo."
+  ],
+  "solutions": [
+    "echo \"PORT=8080\" > servidor.conf",
+    "echo 'PORT=8080' > servidor.conf",
+    "echo PORT=8080 > servidor.conf"
+  ],
+  "explanation": "O operador > direciona a saída padrão (stdout) para um arquivo, criando-o ou substituindo seu conteúdo."
+}

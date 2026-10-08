@@ -8,22 +8,29 @@ import {
 } from './index';
 
 describe('Content Loader (apps/web)', () => {
-  it('deve carregar e validar todos os 8 exercícios de SQL iniciais', () => {
+  it('deve carregar e validar todos os 19 exercícios das 4 trilhas', () => {
     const exercises = getAllExercises();
-    expect(exercises.length).toBe(8);
+    expect(exercises.length).toBe(19);
 
-    // Confere que todos pertencem à trilha sql
+    const sqlExs = exercises.filter((ex) => ex.track === 'sql');
+    const linuxExs = exercises.filter((ex) => ex.track === 'linux');
+    const dockerExs = exercises.filter((ex) => ex.track === 'docker');
+    const networkExs = exercises.filter((ex) => ex.track === 'networks');
+
+    expect(sqlExs.length).toBe(8);
+    expect(linuxExs.length).toBe(5);
+    expect(dockerExs.length).toBe(3);
+    expect(networkExs.length).toBe(3);
+
     for (const ex of exercises) {
-      expect(ex.track).toBe('sql');
       expect(ex.solutions.length).toBeGreaterThanOrEqual(1);
-      expect(ex.hints.length).toBe(2);
-      expect(ex.dataset).toBe('alunos');
+      expect(ex.hints.length).toBeGreaterThanOrEqual(1);
     }
   });
 
   it('getPublicExercises não deve expor o array de soluções', () => {
     const publicExs = getPublicExercises();
-    expect(publicExs.length).toBe(8);
+    expect(publicExs.length).toBe(19);
 
     for (const pEx of publicExs) {
       expect((pEx as Record<string, unknown>).solutions).toBeUndefined();

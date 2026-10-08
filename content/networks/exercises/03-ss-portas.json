@@ -1,0 +1,22 @@
+{
+  "id": "networks-03-ss",
+  "track": "networks",
+  "module": "sockets",
+  "level": 3,
+  "title": "Inspecionando Portas em Escuta",
+  "difficulty": "medium",
+  "prerequisites": ["networks-02-curl"],
+  "question": "Inspecione todos os sockets TCP em estado de escuta (listening) com portas numéricas e processos utilizando ss -lntp.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["ss", "ports", "tcp"],
+  "hints": [
+    "Execute ss -lntp no terminal."
+  ],
+  "solutions": [
+    "ss -lntp",
+    "ss -ltpn",
+    "ss -tulpn"
+  ],
+  "explanation": "O comando ss (socket statistics) lista portas e conexões no kernel, facilitando o diagnóstico de serviços ativos."
+}

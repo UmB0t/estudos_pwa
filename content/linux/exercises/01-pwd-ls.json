@@ -1,0 +1,24 @@
+{
+  "id": "linux-01-pwd-ls",
+  "track": "linux",
+  "module": "navegacao",
+  "level": 1,
+  "title": "Navegação Básica (pwd e ls)",
+  "difficulty": "easy",
+  "prerequisites": [],
+  "question": "Descubra seu diretório atual e liste os arquivos presentes nele utilizando os comandos pwd e ls.",
+  "setup": "echo 'Manual do Aluno' > /home/aluno/README.txt",
+  "orderMatters": false,
+  "skills": ["pwd", "ls"],
+  "hints": [
+    "Execute pwd para ver o caminho atual.",
+    "Execute ls para listar o conteúdo do diretório."
+  ],
+  "solutions": [
+    "pwd && ls",
+    "pwd; ls",
+    "ls",
+    "pwd"
+  ],
+  "explanation": "pwd (print working directory) exibe o caminho absoluto do diretório atual e ls lista os arquivos presentes."
+}

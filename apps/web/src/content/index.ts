@@ -3,11 +3,12 @@ import {
   toPublicExercise,
   type Exercise,
   type PublicExercise,
+  type ExerciseTrack,
 } from '@lab/shared';
 
-// Carregamento estático de todos os arquivos JSON de exercícios em content/sql/exercises
+// Carregamento estático de todos os arquivos JSON de exercícios em content/*/exercises
 const exerciseModules = import.meta.glob(
-  '../../../../content/sql/exercises/*.json',
+  '../../../../content/*/exercises/*.json',
   { eager: true },
 );
 
@@ -45,6 +46,13 @@ export function getAllExercises(): Exercise[] {
  */
 export function getPublicExercises(): PublicExercise[] {
   return loadedExercises.map(toPublicExercise);
+}
+
+/**
+ * Retorna exercícios públicos filtrados por trilha.
+ */
+export function getExercisesByTrack(track: ExerciseTrack): PublicExercise[] {
+  return loadedExercises.filter((ex) => ex.track === track).map(toPublicExercise);
 }
 
 /**

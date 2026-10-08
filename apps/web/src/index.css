@@ -1815,3 +1815,294 @@ main {
   background-color: var(--line);
   margin: 1.5rem 0;
 }
+
+/* ==============================================================================
+   Terminal Interativo Vetor (Linux, Docker, Redes) & Abas de Trilhas
+   ============================================================================== */
+
+.terminal-interactive-body {
+  background-color: var(--navy);
+  padding: 1.25rem;
+  min-height: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.terminal-welcome {
+  color: #64748B;
+  font-size: 0.82rem;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.terminal-log-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.terminal-line-cmd {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.terminal-prompt {
+  color: #10B981;
+  font-weight: 700;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.terminal-cmd {
+  color: #FFC83D;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.terminal-output {
+  margin: 0;
+  padding: 0.25rem 0 0.5rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal-output.stdout {
+  color: #E2E8F0;
+}
+
+.terminal-output.stderr {
+  color: #F87171;
+}
+
+.terminal-active-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.terminal-active-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #F8FAFC;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  caret-color: var(--yel);
+}
+
+.terminal-result-preview {
+  margin-top: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background-color: var(--panel);
+  overflow: hidden;
+}
+
+.terminal-result-header {
+  background-color: var(--panel2);
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy);
+  border-bottom: 1px solid var(--line);
+}
+
+.terminal-result-body {
+  padding: 0.85rem 1rem;
+  margin: 0;
+  background-color: var(--navy);
+  color: #F8FAFC;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Trilhas Clicáveis & Abas de Filtro */
+.track-card {
+  cursor: pointer;
+  user-select: none;
+}
+
+.track-card:hover {
+  transform: translateY(-3px);
+}
+
+.track-card.is-selected-track {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.track-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.track-tab {
+  background-color: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.track-tab:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.track-tab.active {
+  background-color: var(--navy);
+  border-color: var(--navy);
+  color: #FFFFFF;
+  box-shadow: 2px 2px 0 var(--blue);
+}
+
+/* ==============================================================================
+   Mascote Reativa Vetor (Veti)
+   ============================================================================== */
+
+.mascot-section-container {
+  margin: 0.5rem 1.5rem 1rem;
+}
+
+.vetor-mascot-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background-color: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1.25rem;
+  box-shadow: 3px 3px 0 var(--line);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vetor-mascot-card.emotion-celebrating {
+  border-color: var(--ok);
+  background-color: #F0FDF8;
+  box-shadow: 3px 3px 0 var(--ok);
+}
+
+.vetor-mascot-card.emotion-thinking {
+  border-color: var(--blue);
+  box-shadow: 3px 3px 0 var(--blue);
+}
+
+.vetor-mascot-card.emotion-disapproval {
+  border-color: var(--bad);
+  background-color: #FFF5F7;
+  box-shadow: 3px 3px 0 var(--bad);
+}
+
+.mascot-avatar-wrap {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 6px rgba(20, 26, 60, 0.1));
+}
+
+.mascot-svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease;
+}
+
+.vetor-mascot-card:hover .mascot-svg {
+  transform: scale(1.06) rotate(-2deg);
+}
+
+.antenna-pulse {
+  animation: antennaGlow 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes antennaGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px #2F4BFF); }
+  100% { transform: scale(1.2); filter: drop-shadow(0 0 8px #2F4BFF); }
+}
+
+.mascot-bubble {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mascot-name-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mascot-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--yel);
+  border: 1.5px solid var(--navy);
+}
+
+.emotion-celebrating .mascot-badge-dot { background-color: var(--ok); }
+.emotion-thinking .mascot-badge-dot { background-color: var(--blue); }
+.emotion-disapproval .mascot-badge-dot { background-color: var(--bad); }
+
+.mascot-name {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.mascot-role {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mascot-text {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.emotion-celebrating .mascot-text { color: #065F46; }
+.emotion-disapproval .mascot-text { color: #9F1239; }
+.emotion-thinking .mascot-text { color: var(--navy); }
+
+

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { AppView } from '../types';
-import { useSqlEngine } from '../context/SqlEngineContext';
 import { useProgression } from '../context/ProgressionContext';
 import { ProfileModal } from './ProfileModal';
 
@@ -10,14 +9,12 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
-  const { status, statusMessage } = useSqlEngine();
   const { currentProfile, stats } = useProgression();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleNavClick = (view: AppView, sectionId?: string) => {
     onNavigate(view, sectionId);
     if (sectionId && (currentView === 'home' || view === 'home')) {
-      // Smooth scroll if already on home or navigating to home
       setTimeout(() => {
         const el = document.getElementById(sectionId);
         if (el) {
@@ -36,10 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
               <span className="brand-letter">V</span>
             </div>
             <div className="brand-text">
-              <div className="brand-name">
-                Vetor <span className="brand-sub">SQL &amp; Linux Lab</span>
-              </div>
-              <div className="brand-tagline">Laboratório de Estudos 100% Local</div>
+              <div className="brand-name">Vetor</div>
             </div>
           </div>
 
@@ -92,11 +86,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
             <span className="profile-name-text">{currentProfile?.name ?? 'Estudante'}</span>
             <span className="profile-caret">▾</span>
           </button>
-
-          <div className={`status-badge ${status}`} title={statusMessage}>
-            <span className="status-dot" />
-            <span className="status-text">{statusMessage}</span>
-          </div>
         </div>
       </header>
 

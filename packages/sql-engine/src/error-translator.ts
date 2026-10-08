@@ -74,13 +74,41 @@ export function translateSqlError(err: unknown): TranslatedError {
   }
 
   // 6. Erro de sintaxe (42601 ou regex de sintaxe)
-  const syntaxMatch = originalMessage.match(/syntax error at or near "([^"]+)"/i);
-  if (syntaxMatch?.[1] || code === '42601') {
-    const near = syntaxMatch?.[1];
+  const syntaxNearMatch = originalMessage.match(/syntax error at or near "([^"]+)"/i);
+  const syntaxEndOfInput = /syntax error at (?:or near )?end of input/i.test(originalMessage);
+  const isSyntaxError =
+    code === '42601' ||
+    Boolean(syntaxNearMatch) ||
+    syntaxEndOfInput ||
+    /syntax error/i.test(originalMessage);
+
+  if (isSyntaxError) {
+    if (syntaxNearMatch?.[1]) {
+      return {
+        message: `Erro de sintaxe próximo a "${syntaxNearMatch[1]}". Verifique a escrita do comando.`,
+        details: originalMessage,
+        code: code ?? '42601',
+      };
+    }
+    if (syntaxEndOfInput) {
+      return {
+        message:
+          'Erro de sintaxe: instrução incompleta no final do comando. Verifique se faltou informar o nome da tabela, coluna ou condição.',
+        details: originalMessage,
+        code: code ?? '42601',
+      };
+    }
     return {
-      message: near
-        ? `Erro de sintaxe próximo a "${near}". Verifique a escrita do comando.`
-        : 'Erro de sintaxe SQL. Verifique a escrita e a pontuação do comando.',
+      message: 'Erro de sintaxe SQL. Verifique a escrita e a pontuação do comando.',
+      details: originalMessage,
+      code: code ?? '42601',
+    };
+  }
+
+  // 6.1 Aspas não finalizadas
+  if (/unterminated quoted string/i.test(originalMessage)) {
+    return {
+      message: 'Erro de sintaxe: aspas abertas não foram fechadas corretamente.',
       details: originalMessage,
       code: code ?? '42601',
     };

@@ -76,11 +76,18 @@ export const SqlEngineProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setStatusMessage('Executando verificação...');
 
     try {
-      const datasetSql = exercise.dataset ? getDatasetSql(exercise.dataset) : undefined;
+      const datasetName = exercise.dataset ?? 'alunos';
+      let session = sessions.get(datasetName);
+      if (!session) {
+        const datasetSql = datasetName ? getDatasetSql(datasetName) : undefined;
+        session = await createInProcessSqlSession(datasetSql, exercise.setup);
+        sessions.set(datasetName, session);
+      }
+
       const res = await evaluator.evaluate(
         {
           exercise,
-          datasetSql,
+          sqlEngine: session,
         },
         studentSql,
       );
@@ -92,7 +99,7 @@ export const SqlEngineProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setStatusMessage('Pronto');
       return {
         status: 'wrong',
-        message: 'Ocorreu um erro inesperado ao executar a avaliação.',
+        message: 'Ocorreu um erro ao executar a avaliação da consulta.',
         error: err instanceof Error ? err.message : String(err),
       };
     }

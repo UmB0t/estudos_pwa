@@ -1,0 +1,21 @@
+{
+  "id": "linux-02-cd-navegacao",
+  "track": "linux",
+  "module": "navegacao",
+  "level": 2,
+  "title": "Navegando entre Diretórios (cd)",
+  "difficulty": "easy",
+  "prerequisites": ["linux-01-pwd-ls"],
+  "question": "Navegue para o diretório de configurações do sistema (/etc) usando o comando cd.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["cd", "paths"],
+  "hints": [
+    "Utilize o comando cd seguido do caminho absoluto: cd /etc"
+  ],
+  "solutions": [
+    "cd /etc",
+    "cd /etc/"
+  ],
+  "explanation": "O comando cd (change directory) altera o diretório atual no shell para o caminho informado."
+}

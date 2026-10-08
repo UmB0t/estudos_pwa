@@ -155,6 +155,36 @@ describe('SqlEvaluator (Integração com PGlite)', () => {
     expect(res.message).toContain('Erro de sintaxe próximo a "alunos"');
   });
 
+  // 8b. Erro de sintaxe em query incompleta (ex: SELECT * FROM)
+  it('8b. deve capturar erro de sintaxe em query incompleta (ex: SELECT * FROM)', async () => {
+    const studentSql = 'SELECT * FROM';
+    const res = await evaluator.evaluate(
+      { exercise: baseExercise, datasetSql: datasetAlunos },
+      studentSql,
+    );
+
+    expect(res.status).toBe('wrong');
+    expect(res.message).toContain('Erro de sintaxe');
+    expect(res.error).toBeDefined();
+  });
+
+  // 8c. Query correta retorna todas as linhas e status correct
+  it('8c. deve retornar todas as linhas em SELECT * FROM alunos e status correct', async () => {
+    const allAlunosExercise: Exercise = {
+      ...baseExercise,
+      solutions: ['SELECT * FROM alunos;'],
+    };
+    const studentSql = 'SELECT * FROM alunos;';
+    const res = await evaluator.evaluate(
+      { exercise: allAlunosExercise, datasetSql: datasetAlunos },
+      studentSql,
+    );
+
+    expect(res.status).toBe('correct');
+    expect(res.studentResult).toBeDefined();
+    expect(res.studentResult?.rows.length).toBe(4);
+  });
+
   // 9. Tentativa de DROP TABLE/INSERT -> bloqueada (wrong)
   it('9. deve bloquear tentativas de mutação DDL/DML e retornar wrong', async () => {
     const dropSql = 'DROP TABLE alunos;';

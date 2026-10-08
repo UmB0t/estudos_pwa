@@ -1,0 +1,21 @@
+{
+  "id": "docker-02-run-nginx",
+  "track": "docker",
+  "module": "containers",
+  "level": 2,
+  "title": "Executando Container Nginx",
+  "difficulty": "easy",
+  "prerequisites": ["docker-01-ps"],
+  "question": "Inicie um container Nginx em background (-d) mapeando a porta 8080 do host para a porta 80 do container.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["docker-run", "ports"],
+  "hints": [
+    "Utilize docker run -d -p 8080:80 nginx"
+  ],
+  "solutions": [
+    "docker run -d -p 8080:80 nginx",
+    "docker run -d -p 8080:80 nginx:latest"
+  ],
+  "explanation": "A flag -d desanexa o container (modo daemon) e -p vincula uma porta do host à porta interna do container."
+}

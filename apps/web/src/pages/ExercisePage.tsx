@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { EvaluationResult, Exercise } from '@lab/shared';
 import type { SqlQueryResult } from '@lab/sql-engine';
+import { LinuxEvaluator } from '@lab/linux-lab';
+import { DockerEvaluator } from '@lab/docker-lab';
+import { NetworkEvaluator } from '@lab/network-lab';
 import { useSqlEngine } from '../context/SqlEngineContext';
 import { useProgression } from '../context/ProgressionContext';
 import { SqlEditor } from '../components/SqlEditor';
+import { Terminal } from '../components/Terminal';
 import { ResultTable } from '../components/ResultTable';
 import { FeedbackBanner } from '../components/FeedbackBanner';
+import { Mascot, type MascotEmotion } from '../components/Mascot';
 
 interface ExercisePageProps {
   exercise: Exercise;
@@ -14,6 +19,10 @@ interface ExercisePageProps {
   hasNext: boolean;
   onSuccess?: () => void;
 }
+
+const linuxEvaluator = new LinuxEvaluator();
+const dockerEvaluator = new DockerEvaluator();
+const networkEvaluator = new NetworkEvaluator();
 
 export const ExercisePage: React.FC<ExercisePageProps> = ({
   exercise,
@@ -31,7 +40,9 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [datasetPreview, setDatasetPreview] = useState<SqlQueryResult | null>(null);
+  const [mascotEmotion, setMascotEmotion] = useState<MascotEmotion>('idle');
 
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const existingProgress = getExerciseProgress(exercise.id);
 
   // Reseta o estado quando o exercício atual mudar
@@ -42,30 +53,79 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     setShowSolution(false);
     setEvaluation(null);
     setIsEvaluating(false);
+    setMascotEmotion('idle');
 
-    if (exercise.dataset) {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    if (exercise.track === 'sql' && exercise.dataset) {
       getDatasetPreview(exercise.dataset).then((preview) => {
         setDatasetPreview(preview);
       });
+    } else {
+      setDatasetPreview(null);
     }
+
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
   }, [exercise, getDatasetPreview, getExerciseProgress]);
 
-  const handleVerify = async () => {
-    if (!code.trim() || isEvaluating) return;
+  // Listener de digitação: ativa 'thinking' e volta para 'idle' após 10 segundos de inatividade
+  const handleCodeChange = (newCode: string) => {
+    setCode(newCode);
+    setMascotEmotion('thinking');
+
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    inactivityTimerRef.current = setTimeout(() => {
+      setMascotEmotion('idle');
+    }, 10000);
+  };
+
+  const handleVerify = async (codeToVerify?: string) => {
+    const targetCode = (codeToVerify ?? code).trim();
+    if (!targetCode || isEvaluating) return;
+
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
 
     setIsEvaluating(true);
+    setMascotEmotion('thinking');
     const startTime = performance.now();
     try {
-      const res = await evaluateExercise(exercise, code);
+      let res: EvaluationResult;
+
+      if (exercise.track === 'sql') {
+        res = await evaluateExercise(exercise, targetCode);
+      } else if (exercise.track === 'linux') {
+        res = await linuxEvaluator.evaluate({ exercise }, targetCode);
+      } else if (exercise.track === 'docker') {
+        res = await dockerEvaluator.evaluate({ exercise }, targetCode);
+      } else {
+        res = await networkEvaluator.evaluate({ exercise }, targetCode);
+      }
+
       const executionTimeMs = Math.round(performance.now() - startTime);
       setEvaluation(res);
+
+      if (res.status === 'correct') {
+        setMascotEmotion('celebrating');
+      } else {
+        setMascotEmotion('disapproval');
+      }
 
       // Registra a tentativa no progression engine
       await recordAttempt({
         exerciseId: exercise.id,
         trackId: exercise.track,
         moduleId: exercise.module,
-        code,
+        code: targetCode,
         status: res.status,
         isSuccess: res.status === 'correct',
         executionTimeMs,
@@ -75,6 +135,14 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
       if (res.status === 'correct' && onSuccess) {
         onSuccess();
       }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      setEvaluation({
+        status: 'wrong',
+        message: 'Erro na execução da consulta. Verifique a escrita do comando.',
+        error: errMsg,
+      });
+      setMascotEmotion('disapproval');
     } finally {
       setIsEvaluating(false);
     }
@@ -92,7 +160,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
 
   const handleRestoreLastCode = () => {
     if (existingProgress?.lastCode) {
-      setCode(existingProgress.lastCode);
+      handleCodeChange(existingProgress.lastCode);
     }
   };
 
@@ -179,24 +247,39 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
         )}
       </div>
 
-      {/* PAINEL DIREITO: Terminal SQL, Barra de Ações, Banners e Resultado da Consulta */}
+      {/* PAINEL DIREITO: Terminal SQL / Bash / Docker / Redes, Barra de Ações, Mascote e Resultados */}
       <div className="exercise-right-panel">
-        <SqlEditor
-          value={code}
-          onChange={setCode}
-          onExecute={handleVerify}
-          disabled={isEvaluating}
-        />
+        {exercise.track === 'sql' ? (
+          <SqlEditor
+            value={code}
+            onChange={handleCodeChange}
+            onExecute={() => handleVerify()}
+            disabled={isEvaluating}
+          />
+        ) : (
+          <Terminal
+            track={exercise.track}
+            initialSetup={exercise.setup}
+            currentCode={code}
+            onCodeChange={handleCodeChange}
+            onCommandRun={(cmd) => handleVerify(cmd)}
+            disabled={isEvaluating}
+          />
+        )}
 
         {/* Barra de Ações */}
         <div className="editor-action-bar">
           <div className="action-buttons-left">
             <button
               className="btn btn-yel-submit"
-              onClick={handleVerify}
-              disabled={isEvaluating || !code.trim() || status === 'running'}
+              onClick={() => handleVerify()}
+              disabled={isEvaluating || !code.trim() || (exercise.track === 'sql' && status === 'running')}
             >
-              {isEvaluating ? 'Verificando...' : 'Verificar resposta (Ctrl+Enter)'}
+              {isEvaluating
+                ? 'Verificando...'
+                : exercise.track === 'sql'
+                  ? 'Verificar resposta (Ctrl+Enter)'
+                  : 'Verificar resposta (Enter)'}
             </button>
 
             {exercise.hints.length > 0 && (
@@ -232,7 +315,12 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           )}
         </div>
 
-        {/* Área de Feedback e Tabela de Resultados */}
+        {/* Mascote Reativa do Vetor */}
+        <div className="mascot-section-container">
+          <Mascot emotion={mascotEmotion} />
+        </div>
+
+        {/* Área de Feedback e Tabela de Resultados do Aluno */}
         <div className="results-and-feedback-area">
           {evaluation && <FeedbackBanner evaluation={evaluation} />}
 
@@ -241,6 +329,15 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
               data={evaluation.studentResult}
               title="Resultado retornado pela sua consulta:"
             />
+          )}
+
+          {exercise.track !== 'sql' && evaluation?.output && (
+            <div className="terminal-result-preview">
+              <div className="terminal-result-header">
+                <span>Saída do Comando</span>
+              </div>
+              <pre className="terminal-result-body">{evaluation.output}</pre>
+            </div>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import type { PublicExercise } from '@lab/shared';
+import React, { useState } from 'react';
+import type { PublicExercise, ExerciseTrack } from '@lab/shared';
 import { getPublicExercises } from '../content';
 import { useProgression } from '../context/ProgressionContext';
 
@@ -7,9 +7,95 @@ interface HomePageProps {
   onSelectExercise: (exerciseId: string) => void;
 }
 
+interface ModuleMeta {
+  id: string;
+  track: ExerciseTrack;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const MODULES_META: ModuleMeta[] = [
+  // SQL
+  {
+    id: 'select',
+    track: 'sql',
+    title: 'Consultas Básicas (SELECT & DISTINCT)',
+    description: 'Aprenda a projetar colunas, recuperar registros e eliminar duplicatas.',
+    icon: '📐',
+  },
+  {
+    id: 'alias',
+    track: 'sql',
+    title: 'Renomeação de Colunas (AS)',
+    description: 'Defina rótulos customizados para organizar o esquema e a semântica da saída.',
+    icon: '🏷️',
+  },
+  {
+    id: 'where',
+    track: 'sql',
+    title: 'Filtros e Condições (WHERE)',
+    description: 'Restrinja consultas aplicando operadores relacionais, lógicos e listas.',
+    icon: '🔍',
+  },
+  // Linux
+  {
+    id: 'navegacao',
+    track: 'linux',
+    title: 'Navegação no Sistema de Arquivos',
+    description: 'Explore diretórios, inspecione caminhos e domine comandos essenciais de movimentação.',
+    icon: '🧭',
+  },
+  {
+    id: 'arquivos',
+    track: 'linux',
+    title: 'Manipulação de Pastas e Arquivos',
+    description: 'Crie estruturas de pastas, manipule arquivos e direcione fluxos com redirecionamentos.',
+    icon: '📁',
+  },
+  {
+    id: 'inspecao',
+    track: 'linux',
+    title: 'Inspeção e Busca de Texto',
+    description: 'Exiba conteúdos e filtre informações em arquivos com buscas por padrões.',
+    icon: '🔎',
+  },
+  // Docker
+  {
+    id: 'containers',
+    track: 'docker',
+    title: 'Gerenciamento de Containers',
+    description: 'Liste instâncias, inicialize serviços isolados e mapeie portas do host.',
+    icon: '📦',
+  },
+  {
+    id: 'diagnostico-docker',
+    track: 'docker',
+    title: 'Logs e Monitoramento Docker',
+    description: 'Acompanhe saídas de processos e verifique o estado operacional de containers.',
+    icon: '📊',
+  },
+  // Networks
+  {
+    id: 'diagnostico',
+    track: 'networks',
+    title: 'Conectividade e Protocolos de Rede',
+    description: 'Teste alcance com ping e realize requisições cliente com cURL.',
+    icon: '⚡',
+  },
+  {
+    id: 'sockets',
+    track: 'networks',
+    title: 'Portas e Sockets de Rede',
+    description: 'Inspecione portas em escuta no sistema operacional e identifique serviços ativos.',
+    icon: '🔌',
+  },
+];
+
 export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
   const exercises: PublicExercise[] = getPublicExercises();
   const { stats, getExerciseProgress } = useProgression();
+  const [selectedTrack, setSelectedTrack] = useState<ExerciseTrack | 'all'>('all');
 
   // Encontra o próximo exercício a fazer (primeiro não concluído)
   const nextUnfinishedExercise =
@@ -22,39 +108,50 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
   const completedCount = stats?.completedExercises ?? 0;
   const totalCount = stats?.totalExercises ?? exercises.length;
 
-  const modules = [
-    {
-      id: 'select',
-      title: 'Consultas Básicas (SELECT & DISTINCT)',
-      description: 'Aprenda a projetar colunas, recuperar registros e eliminar duplicatas.',
-      icon: '📐',
-    },
-    {
-      id: 'alias',
-      title: 'Renomeação de Colunas (AS)',
-      description: 'Defina rótulos customizados para organizar o esquema e a semântica da saída.',
-      icon: '🏷️',
-    },
-    {
-      id: 'where',
-      title: 'Filtros e Condições (WHERE)',
-      description: 'Restrinja consultas aplicando operadores relacionais, lógicos (AND/OR) e IN.',
-      icon: '🔍',
-    },
-  ];
+  const filteredExercises =
+    selectedTrack === 'all'
+      ? exercises
+      : exercises.filter((ex) => ex.track === selectedTrack);
+
+  const filteredModules = MODULES_META.filter((mod) => {
+    if (selectedTrack !== 'all' && mod.track !== selectedTrack) {
+      return false;
+    }
+    return exercises.some((ex) => ex.track === mod.track && (ex.module === mod.id || (mod.id === 'diagnostico-docker' && ex.track === 'docker' && ex.module === 'diagnostico')));
+  });
+
+  const getTrackStats = (trackKey: ExerciseTrack) => {
+    const trackExercises = exercises.filter((e) => e.track === trackKey);
+    const completed = trackExercises.filter((e) => getExerciseProgress(e.id)?.completed).length;
+    const percentage = trackExercises.length > 0 ? Math.round((completed / trackExercises.length) * 100) : 0;
+    return { completed, total: trackExercises.length, percentage };
+  };
+
+  const sqlStats = getTrackStats('sql');
+  const linuxStats = getTrackStats('linux');
+  const dockerStats = getTrackStats('docker');
+  const networkStats = getTrackStats('networks');
+
+  const handleTrackCardClick = (trackKey: ExerciseTrack) => {
+    setSelectedTrack(trackKey);
+    const sectionEl = document.getElementById('section-exercicios');
+    if (sectionEl) {
+      sectionEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="home-container">
-      {/* HERO CARD - Estilo Vetor Azul Elétrico com Conic Gradient */}
+      {/* HERO CARD - Estilo Vetor Azul Elétrico */}
       <section className="hero-card">
         <div className="hero-content">
           <div className="hero-pill">
             <span className="hero-pill-dot" />
-            <span>100% Client-Side • Sem Backend • PGlite WebAssembly</span>
+            <span>Prática 100% Interativa • Ambiente Local • Zero Configuração</span>
           </div>
-          <h1 className="hero-title">Laboratório de Estudos &amp; Prática Técnica</h1>
+          <h1 className="hero-title">Seu Espaço de Prática e Aprendizado Técnico</h1>
           <p className="hero-subtitle">
-            Aprenda SQL PostgreSQL real direto no seu navegador. Zero configuração, validação semântica instantânea e histórico offline preservado.
+            Desenvolva habilidades sólidas praticando comandos e conceitos técnicos reais. Feedback imediato, ambiente seguro e histórico salvo localmente no seu navegador.
           </p>
 
           <div className="hero-actions">
@@ -92,109 +189,149 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
             </div>
           </div>
           <div className="hero-visual-footer">
-            <span>Progresso da Trilha SQL</span>
+            <span>Progresso Geral dos Estudos</span>
           </div>
         </div>
       </section>
 
-      {/* SEÇÃO TRILHAS */}
+      {/* SEÇÃO TRILHAS (Todas Interativas e Clicáveis) */}
       <section id="section-trilhas" className="tracks-section">
         <div className="section-header">
           <div>
             <h2 className="section-title">Trilhas de Aprendizado</h2>
-            <p className="section-desc">Práticas focadas com engines emuladas ou reais rodando localmente.</p>
+            <p className="section-desc">
+              Escolha uma trilha técnica para filtrar os exercícios e focar na sua prática.
+            </p>
           </div>
         </div>
 
         <div className="tracks-grid">
-          {/* Trilha SQL Ativa */}
-          <div className="track-card track-sql">
+          {/* Trilha SQL */}
+          <div
+            className={`track-card track-sql ${selectedTrack === 'sql' ? 'is-selected-track' : ''}`}
+            onClick={() => handleTrackCardClick('sql')}
+            role="button"
+            tabIndex={0}
+          >
             <div className="track-card-header">
               <div className="track-badge-group">
                 <span className="track-symbol">🐘</span>
-                <span className="badge badge-active">Trilha Ativa</span>
+                <span className="badge badge-active">Trilha Prática</span>
               </div>
-              <span className="track-stats-num">{stats?.tracks['sql']?.completionPercentage ?? 0}%</span>
+              <span className="track-stats-num">{sqlStats.percentage}%</span>
             </div>
 
             <h3 className="track-title">SQL (PostgreSQL 16)</h3>
             <p className="track-desc">
-              Executado via PGlite WebAssembly. Transações somente leitura com rollback, datasets reais e feedback semântico.
+              Domine consultas, filtros, renomeação de colunas e manipulação de dados com PostgreSQL.
+            </p>
+
+            <div className="track-progress-wrap">
+              <div className="track-progress-bar">
+                <div className="track-progress-fill" style={{ width: `${sqlStats.percentage}%` }} />
+              </div>
+              <div className="track-progress-meta">
+                <span>{sqlStats.completed} de {sqlStats.total} exercícios concluídos</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Trilha Linux */}
+          <div
+            className={`track-card track-linux ${selectedTrack === 'linux' ? 'is-selected-track' : ''}`}
+            onClick={() => handleTrackCardClick('linux')}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="track-card-header">
+              <div className="track-badge-group">
+                <span className="track-symbol">🐧</span>
+                <span className="badge badge-active">Trilha Prática</span>
+              </div>
+              <span className="track-stats-num">{linuxStats.percentage}%</span>
+            </div>
+
+            <h3 className="track-title">Linux Shell &amp; Bash</h3>
+            <p className="track-desc">
+              Aprenda navegação no sistema de arquivos, criação de pastas, manipulação de arquivos e busca de texto.
             </p>
 
             <div className="track-progress-wrap">
               <div className="track-progress-bar">
                 <div
-                  className="track-progress-fill"
-                  style={{ width: `${stats?.tracks['sql']?.completionPercentage ?? 0}%` }}
+                  className="track-progress-fill fill-linux"
+                  style={{ width: `${linuxStats.percentage}%`, backgroundColor: '#0E8F67' }}
                 />
               </div>
               <div className="track-progress-meta">
-                <span>{stats?.tracks['sql']?.completedExercises ?? 0} de {stats?.tracks['sql']?.totalExercises ?? 8} exercícios concluídos</span>
+                <span>{linuxStats.completed} de {linuxStats.total} exercícios concluídos</span>
               </div>
-            </div>
-
-            <div className="track-tags">
-              <span className="mono-tag">#select</span>
-              <span className="mono-tag">#where</span>
-              <span className="mono-tag">#alias</span>
-              <span className="mono-tag">#pglite</span>
-            </div>
-          </div>
-
-          {/* Trilha Linux */}
-          <div className="track-card track-linux">
-            <div className="track-card-header">
-              <div className="track-badge-group">
-                <span className="track-symbol">🐧</span>
-                <span className="badge badge-soon">Fase 2</span>
-              </div>
-            </div>
-            <h3 className="track-title">Linux Shell &amp; Bash</h3>
-            <p className="track-desc">
-              Terminal virtual emulado em TypeScript com sistema de arquivos em memória (VFS), pipes, redirecionamentos e comandos essenciais.
-            </p>
-            <div className="track-tags">
-              <span className="mono-tag">#terminal</span>
-              <span className="mono-tag">#bash</span>
-              <span className="mono-tag">#posix</span>
             </div>
           </div>
 
           {/* Trilha Docker */}
-          <div className="track-card track-docker">
+          <div
+            className={`track-card track-docker ${selectedTrack === 'docker' ? 'is-selected-track' : ''}`}
+            onClick={() => handleTrackCardClick('docker')}
+            role="button"
+            tabIndex={0}
+          >
             <div className="track-card-header">
               <div className="track-badge-group">
                 <span className="track-symbol">🐳</span>
-                <span className="badge badge-soon">Fase 3</span>
+                <span className="badge badge-active">Trilha Prática</span>
               </div>
+              <span className="track-stats-num">{dockerStats.percentage}%</span>
             </div>
+
             <h3 className="track-title">Docker CLI</h3>
             <p className="track-desc">
-              Simulador de comandos Docker para construção de imagens, execução de containers e gerenciamento de volumes.
+              Gerencie containers, execute servidores isolados e inspecione logs de execução no terminal.
             </p>
-            <div className="track-tags">
-              <span className="mono-tag">#containers</span>
-              <span className="mono-tag">#dockerfile</span>
+
+            <div className="track-progress-wrap">
+              <div className="track-progress-bar">
+                <div
+                  className="track-progress-fill fill-docker"
+                  style={{ width: `${dockerStats.percentage}%`, backgroundColor: '#0284C7' }}
+                />
+              </div>
+              <div className="track-progress-meta">
+                <span>{dockerStats.completed} de {dockerStats.total} exercícios concluídos</span>
+              </div>
             </div>
           </div>
 
           {/* Trilha Redes */}
-          <div className="track-card track-network">
+          <div
+            className={`track-card track-network ${selectedTrack === 'networks' ? 'is-selected-track' : ''}`}
+            onClick={() => handleTrackCardClick('networks')}
+            role="button"
+            tabIndex={0}
+          >
             <div className="track-card-header">
               <div className="track-badge-group">
                 <span className="track-symbol">🌐</span>
-                <span className="badge badge-soon">Fase 3</span>
+                <span className="badge badge-active">Trilha Prática</span>
               </div>
+              <span className="track-stats-num">{networkStats.percentage}%</span>
             </div>
+
             <h3 className="track-title">Redes de Computadores</h3>
             <p className="track-desc">
-              Inspeção com curl, ping, portas, sockets conceituais e diagnóstico de rotas e topologia de rede.
+              Diagnostique conectividade com ping, teste serviços web com cURL e inspecione portas ativas.
             </p>
-            <div className="track-tags">
-              <span className="mono-tag">#curl</span>
-              <span className="mono-tag">#dns</span>
-              <span className="mono-tag">#http</span>
+
+            <div className="track-progress-wrap">
+              <div className="track-progress-bar">
+                <div
+                  className="track-progress-fill fill-network"
+                  style={{ width: `${networkStats.percentage}%`, backgroundColor: '#8B5CF6' }}
+                />
+              </div>
+              <div className="track-progress-meta">
+                <span>{networkStats.completed} de {networkStats.total} exercícios concluídos</span>
+              </div>
             </div>
           </div>
         </div>
@@ -202,20 +339,62 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
 
       {/* SEÇÃO MÓDULOS E LABORATÓRIOS */}
       <section id="section-exercicios" className="modules-section">
-        <div className="section-header">
+        <div className="section-header-row">
           <div>
-            <h2 className="section-title">Laboratórios &amp; Exercícios SQL</h2>
+            <h2 className="section-title">Laboratórios &amp; Exercícios Práticos</h2>
             <p className="section-desc">
-              Selecione qualquer exercício para começar. Não há bloqueios de acesso — pratique livremente!
+              Selecione qualquer exercício para começar. Todos os laboratórios estão desbloqueados para prática livre.
             </p>
+          </div>
+
+          {/* Filtro de Trilhas */}
+          <div className="track-tabs">
+            <button
+              className={`track-tab ${selectedTrack === 'all' ? 'active' : ''}`}
+              onClick={() => setSelectedTrack('all')}
+            >
+              Todas ({exercises.length})
+            </button>
+            <button
+              className={`track-tab ${selectedTrack === 'sql' ? 'active' : ''}`}
+              onClick={() => setSelectedTrack('sql')}
+            >
+              🐘 SQL ({sqlStats.total})
+            </button>
+            <button
+              className={`track-tab ${selectedTrack === 'linux' ? 'active' : ''}`}
+              onClick={() => setSelectedTrack('linux')}
+            >
+              🐧 Linux ({linuxStats.total})
+            </button>
+            <button
+              className={`track-tab ${selectedTrack === 'docker' ? 'active' : ''}`}
+              onClick={() => setSelectedTrack('docker')}
+            >
+              🐳 Docker ({dockerStats.total})
+            </button>
+            <button
+              className={`track-tab ${selectedTrack === 'networks' ? 'active' : ''}`}
+              onClick={() => setSelectedTrack('networks')}
+            >
+              🌐 Redes ({networkStats.total})
+            </button>
           </div>
         </div>
 
-        {modules.map((mod) => {
-          const modExercises = exercises.filter((ex) => ex.module === mod.id);
-          const modStats = stats?.tracks['sql']?.modules[mod.id];
-          const completedCount = modStats?.completedExercises ?? 0;
-          const percentage = modStats?.completionPercentage ?? 0;
+        {filteredModules.map((mod) => {
+          const modExercises = filteredExercises.filter((ex) => {
+            if (ex.track !== mod.track) return false;
+            if (mod.id === 'diagnostico-docker') {
+              return ex.track === 'docker' && ex.module === 'diagnostico';
+            }
+            return ex.module === mod.id;
+          });
+
+          if (modExercises.length === 0) return null;
+
+          const modCompleted = modExercises.filter((ex) => getExerciseProgress(ex.id)?.completed).length;
+          const percentage = Math.round((modCompleted / modExercises.length) * 100);
 
           return (
             <div key={mod.id} className="module-group">
@@ -232,7 +411,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
                   <div className="module-bar">
                     <div className="module-bar-fill" style={{ width: `${percentage}%` }} />
                   </div>
-                  <span className="module-stat-text">{completedCount}/{modExercises.length} ({percentage}%)</span>
+                  <span className="module-stat-text">{modCompleted}/{modExercises.length} ({percentage}%)</span>
                 </div>
               </div>
 
@@ -249,7 +428,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectExercise }) => {
                       onClick={() => onSelectExercise(ex.id)}
                     >
                       <div className="exercise-card-top">
-                        <span className="level-badge">Nível {ex.level}</span>
+                        <span className="level-badge">
+                          {ex.track.toUpperCase()} • Nível {ex.level}
+                        </span>
                         <div className="status-badges">
                           {isCompleted ? (
                             <span className="badge-status-ok">✅ Concluído</span>

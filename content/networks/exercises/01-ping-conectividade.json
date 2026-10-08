@@ -1,0 +1,21 @@
+{
+  "id": "networks-01-ping",
+  "track": "networks",
+  "module": "diagnostico",
+  "level": 1,
+  "title": "Teste de Conectividade com Ping",
+  "difficulty": "easy",
+  "prerequisites": [],
+  "question": "Envie 2 pacotes ICMP para o host google.com utilizando o comando ping.",
+  "setup": "",
+  "orderMatters": false,
+  "skills": ["ping", "icmp"],
+  "hints": [
+    "Utilize a flag -c 2: ping -c 2 google.com"
+  ],
+  "solutions": [
+    "ping -c 2 google.com",
+    "ping google.com -c 2"
+  ],
+  "explanation": "O comando ping utiliza o protocolo ICMP para testar a conectividade e o tempo de ida e volta (RTT) até o destino."
+}

@@ -190,9 +190,18 @@ importers:
       '@electric-sql/pglite':
         specifier: 0.5.8
         version: 0.5.8
+      '@lab/docker-lab':
+        specifier: workspace:*
+        version: link:../../packages/docker-lab
       '@lab/exercise-engine':
         specifier: workspace:*
         version: link:../../packages/exercise-engine
+      '@lab/linux-lab':
+        specifier: workspace:*
+        version: link:../../packages/linux-lab
+      '@lab/network-lab':
+        specifier: workspace:*
+        version: link:../../packages/network-lab
       '@lab/progression-engine':
         specifier: workspace:*
         version: link:../../packages/progression-engine
@@ -229,6 +238,10 @@ importers:
         version: 6.2.0(@types/node@22.20.5)
 
   packages/docker-lab:
+    dependencies:
+      '@lab/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: 5.7.3
@@ -248,12 +261,20 @@ importers:
         version: 5.7.3
 
   packages/linux-lab:
+    dependencies:
+      '@lab/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: 5.7.3
         version: 5.7.3
 
   packages/network-lab:
+    dependencies:
+      '@lab/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: 5.7.3
