@@ -1,12 +1,30 @@
 import { z } from 'zod';
 
-export const ProfileSchema = z.object({
+export const StreakDataSchema = z.object({
+  currentStreak: z.number().int().nonnegative().default(0),
+  bestStreak: z.number().int().nonnegative().default(0),
+  lastActiveDate: z.string().nullable().optional(),
+  activityHistory: z.array(z.string()).default([]),
+});
+export type StreakData = z.infer<typeof StreakDataSchema>;
+
+export const GamificationSchema = z.object({
+  xp: z.number().int().nonnegative().default(0),
+});
+export type Gamification = z.infer<typeof GamificationSchema>;
+
+export const UserProfileSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
+  avatarUrl: z.string().optional(),
   createdAt: z.string(),
-  updatedAt: z.string(),
+  updatedAt: z.string().optional(),
+  streak: StreakDataSchema.optional(),
+  gamification: GamificationSchema.optional(),
 });
-export type Profile = z.infer<typeof ProfileSchema>;
+export type UserProfile = z.infer<typeof UserProfileSchema>;
+export type Profile = UserProfile;
+export const ProfileSchema = UserProfileSchema;
 
 export const ExerciseAttemptRecordSchema = z.object({
   id: z.string().min(1),

@@ -7,4 +7,5 @@ export * from './adapters/indexeddb-adapter.js';
 export * from './adapters/factory.js';
 export * from './metrics.js';
 export * from './merge.js';
+export * from './streak.js';
 export * from './engine.js';

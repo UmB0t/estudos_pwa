@@ -403,3 +403,104 @@ describe('Export/Import & Smart Merge', () => {
     expect(prog?.lastCode).toBe('SELECT * FROM alunos;');
   });
 });
+
+describe('Streak & Gamificação (Cálculo de Sequência e XP)', () => {
+  it('novo perfil criado zera as métricas iniciais (streak = 0, bestStreak = 0, xp = 0, activityHistory vazio)', async () => {
+    const adapter = new MemoryStorageAdapter();
+    const engine = new ProgressionEngine(adapter);
+    await engine.init();
+
+    const novo = await engine.createProfile('Lorenzo');
+    expect(novo.name).toBe('Lorenzo');
+    expect(novo.streak?.currentStreak).toBe(0);
+    expect(novo.streak?.bestStreak).toBe(0);
+    expect(novo.streak?.lastActiveDate).toBeNull();
+    expect(novo.streak?.activityHistory).toEqual([]);
+    expect(novo.gamification?.xp).toBe(0);
+  });
+
+  it('resolver exercício registra o dia atual no heatmap e incrementa streak e XP (+50 XP)', async () => {
+    const adapter = new MemoryStorageAdapter();
+    const engine = new ProgressionEngine(adapter);
+    const profile = await engine.init();
+
+    expect(profile.streak?.currentStreak).toBe(0);
+    expect(profile.gamification?.xp).toBe(0);
+
+    // Resolve exercício
+    await engine.recordAttempt({
+      exerciseId: 'sql-01',
+      trackId: 'sql',
+      moduleId: 'intro',
+      code: 'SELECT 1;',
+      status: 'correct',
+      isSuccess: true,
+    });
+
+    const updatedProfile = await engine.getActiveProfile();
+    expect(updatedProfile.streak?.currentStreak).toBe(1);
+    expect(updatedProfile.streak?.bestStreak).toBe(1);
+    expect(updatedProfile.streak?.activityHistory.length).toBe(1);
+    expect(updatedProfile.gamification?.xp).toBe(50);
+  });
+
+  it('calcula sequência consecutiva e reinicia sequência após hiato > 1 dia', async () => {
+    const adapter = new MemoryStorageAdapter();
+    const engine = new ProgressionEngine(adapter);
+    const user = await engine.createProfile('Aluno Constante');
+    await engine.setActiveProfile(user.id);
+
+    // Dia 1: 2026-10-01
+    await engine.recordDailyActivity({ date: '2026-10-01', xpEarned: 20 });
+    let p = await engine.getActiveProfile();
+    expect(p.streak?.currentStreak).toBe(1);
+    expect(p.streak?.bestStreak).toBe(1);
+    expect(p.gamification?.xp).toBe(20);
+
+    // Mesmo dia: 2026-10-01 não duplica nem incrementa streak
+    await engine.recordDailyActivity({ date: '2026-10-01', xpEarned: 20 });
+    p = await engine.getActiveProfile();
+    expect(p.streak?.currentStreak).toBe(1);
+    expect(p.streak?.bestStreak).toBe(1);
+    expect(p.streak?.activityHistory).toEqual(['2026-10-01']);
+    expect(p.gamification?.xp).toBe(40);
+
+    // Dia 2: 2026-10-02 (consecutivo) -> streak vira 2
+    await engine.recordDailyActivity({ date: '2026-10-02', xpEarned: 50 });
+    p = await engine.getActiveProfile();
+    expect(p.streak?.currentStreak).toBe(2);
+    expect(p.streak?.bestStreak).toBe(2);
+    expect(p.streak?.activityHistory).toEqual(['2026-10-01', '2026-10-02']);
+
+    // Hiato: 2026-10-05 (> 1 dia após 2026-10-02) -> streak reinicia para 1, bestStreak preservado em 2
+    await engine.recordDailyActivity({ date: '2026-10-05', xpEarned: 50 });
+    p = await engine.getActiveProfile();
+    expect(p.streak?.currentStreak).toBe(1);
+    expect(p.streak?.bestStreak).toBe(2);
+    expect(p.streak?.activityHistory).toEqual(['2026-10-01', '2026-10-02', '2026-10-05']);
+  });
+
+  it('exportação e importação preservam streak e gamificação integralmente', async () => {
+    const adapter1 = new MemoryStorageAdapter();
+    const engine1 = new ProgressionEngine(adapter1);
+    await engine1.init();
+
+    await engine1.recordDailyActivity({ date: '2026-10-06', xpEarned: 100 });
+    await engine1.recordDailyActivity({ date: '2026-10-07', xpEarned: 150 });
+
+    const json = await engine1.exportDataAsJson();
+
+    const adapter2 = new MemoryStorageAdapter();
+    const engine2 = new ProgressionEngine(adapter2);
+    await engine2.init();
+
+    await engine2.importDataFromJson(json);
+    const restored = await engine2.getActiveProfile();
+    expect(restored.streak?.currentStreak).toBe(2);
+    expect(restored.streak?.bestStreak).toBe(2);
+    expect(restored.streak?.activityHistory).toContain('2026-10-06');
+    expect(restored.streak?.activityHistory).toContain('2026-10-07');
+    expect(restored.gamification?.xp).toBe(250);
+  });
+});
+

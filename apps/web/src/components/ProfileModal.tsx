@@ -68,18 +68,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const handleExport = async () => {
     try {
       setIsProcessing(true);
-      const json = await exportData();
-      const blob = new Blob([json], { type: 'application/json' });
+      const json = await exportData(currentProfile?.id);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const dateStr = new Date().toISOString().split('T')[0];
+      const safeName = (currentProfile?.name || 'aluno')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '-');
       a.href = url;
-      a.download = `sql-lab-progresso-${dateStr}.json`;
+      a.download = `vetor-perfil-${safeName}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setFeedback({ type: 'success', message: 'Arquivo JSON de progresso exportado com sucesso!' });
+      setFeedback({ type: 'success', message: `Perfil "${currentProfile?.name ?? 'Estudante'}" salvo em JSON com sucesso!` });
     } catch (err: unknown) {
       setFeedback({
         type: 'error',
@@ -100,7 +104,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       const res = await importData(text);
       setFeedback({
         type: 'success',
-        message: `Importação realizada com sucesso! (${res.profilesCount} perfis e ${res.progressCount} registros processados)`,
+        message: `Perfil importado com sucesso! (${res.profilesCount} perfis e ${res.progressCount} registros processados)`,
       });
     } catch (err: unknown) {
       setFeedback({
@@ -162,6 +166,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               <div className="profile-list">
                 {profiles.map((p) => {
                   const isActive = p.id === currentProfile?.id;
+                  const streak = p.streak?.currentStreak ?? 0;
+                  const xp = p.gamification?.xp ?? 0;
                   return (
                     <div key={p.id} className={`profile-item ${isActive ? 'active' : ''}`}>
                       <div className="profile-info">
@@ -169,7 +175,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                           {p.name} {isActive && <span className="active-tag">Ativo</span>}
                         </span>
                         <span className="profile-date">
-                          Criado em: {new Date(p.createdAt).toLocaleDateString('pt-BR')}
+                          🔥 {streak} {streak === 1 ? 'dia' : 'dias'} de sequência · ⚡ {xp} XP · Criado em: {new Date(p.createdAt).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
 
@@ -201,7 +207,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               <form onSubmit={handleCreateProfile} className="create-profile-form">
                 <input
                   type="text"
-                  placeholder="Nome do novo perfil (ex: Revisão Prova)"
+                  placeholder="Nome do novo estudante (ex: Lorenzo)"
                   value={newProfileName}
                   onChange={(e) => setNewProfileName(e.target.value)}
                   disabled={isProcessing}
@@ -221,34 +227,34 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           {activeTab === 'backup' && (
             <div className="backup-tab-content">
               <p className="tab-description">
-                Exporte todo o seu progresso local em formato JSON seguro para transferir entre máquinas ou restaurar backups.
+                Exporte todo o seu progresso local em formato JSON seguro para transferir entre máquinas ou restaurar backups com validação Zod.
               </p>
 
               <div className="backup-section">
-                <h4>Exportar Dados</h4>
+                <h4>Exportar Perfil</h4>
                 <p className="backup-help">
-                  Baixe um arquivo contendo todos os perfis, tentativas e exercícios resolvidos.
+                  Baixe um arquivo contendo seu histórico de sequências, XP, tentativas e lições concluídas.
                 </p>
                 <button
                   className="btn btn-primary"
                   onClick={handleExport}
                   disabled={isProcessing}
                 >
-                  ⬇️ Baixar Backup JSON
+                  ⬇️ Salvar Perfil em JSON
                 </button>
               </div>
 
               <div className="backup-divider" />
 
               <div className="backup-section">
-                <h4>Importar &amp; Mesclar Dados</h4>
+                <h4>Importar &amp; Restaurar Perfil</h4>
                 <p className="backup-help">
-                  Selecione um arquivo de backup previamente exportado. O sistema validará o schema e mesclará as tentativas preservando status de conclusão.
+                  Selecione um arquivo de backup (`vetor-perfil-[nome].json`). O sistema validará o schema com Zod e mesclará suas atividades sem perder progresso.
                 </p>
                 <input
                   type="file"
                   ref={fileInputRef}
-                  accept=".json"
+                  accept=".json,application/json"
                   style={{ display: 'none' }}
                   onChange={handleFileUpload}
                 />
@@ -257,7 +263,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isProcessing}
                 >
-                  ⬆️ Selecionar Arquivo JSON para Importar
+                  ⬆️ Importar Perfil JSON
                 </button>
               </div>
             </div>

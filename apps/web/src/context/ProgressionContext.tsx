@@ -19,6 +19,7 @@ interface ProgressionContextValue {
   createProfile: (name: string) => Promise<Profile>;
   deleteProfile: (profileId: string) => Promise<void>;
   recordAttempt: (params: Omit<RecordAttemptParams, 'profileId'>) => Promise<ExerciseProgress>;
+  recordDailyActivity: (xpEarned?: number, date?: string) => Promise<Profile>;
   getExerciseProgress: (exerciseId: string) => ExerciseProgress | null;
   exportData: (profileId?: string) => Promise<string>;
   importData: (jsonString: string) => Promise<{ profilesCount: number; progressCount: number }>;
@@ -133,6 +134,26 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       });
       const prog = await engine.getAllProgress(currentProfile.id);
       setActiveProgress(prog);
+      const active = await engine.getActiveProfile();
+      setCurrentProfile(active);
+      const profList = await engine.getProfiles();
+      setProfiles(profList);
+      return updated;
+    },
+    [engine, currentProfile]
+  );
+
+  const recordDailyActivity = useCallback(
+    async (xpEarned: number = 20, date?: string): Promise<Profile> => {
+      if (!engine || !currentProfile) throw new Error('Engine não inicializado');
+      const updated = await engine.recordDailyActivity({
+        profileId: currentProfile.id,
+        xpEarned,
+        date,
+      });
+      setCurrentProfile(updated);
+      const profList = await engine.getProfiles();
+      setProfiles(profList);
       return updated;
     },
     [engine, currentProfile]
@@ -193,6 +214,7 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       createProfile,
       deleteProfile,
       recordAttempt,
+      recordDailyActivity,
       getExerciseProgress,
       exportData,
       importData,
@@ -208,6 +230,7 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       createProfile,
       deleteProfile,
       recordAttempt,
+      recordDailyActivity,
       getExerciseProgress,
       exportData,
       importData,

@@ -164,15 +164,60 @@ export function mergeDatasets(
       profileMap.set(p.id, { ...p });
     } else {
       // Profile exists: preserve createdAt, update updatedAt if newer
-      const existingUpdated = new Date(existing.updatedAt).getTime() || 0;
-      const importedUpdated = new Date(p.updatedAt).getTime() || 0;
-      if (importedUpdated > existingUpdated) {
-        profileMap.set(p.id, {
-          ...existing,
-          name: p.name || existing.name,
-          updatedAt: p.updatedAt,
-        });
+      const existingUpdated = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      const importedUpdated = p.updatedAt ? new Date(p.updatedAt).getTime() : 0;
+      const isImportedNewer = importedUpdated > existingUpdated;
+
+      // Merge streak
+      const mergedHistory = Array.from(
+        new Set([...(existing.streak?.activityHistory || []), ...(p.streak?.activityHistory || [])])
+      ).sort();
+
+      const bestStreak = Math.max(
+        existing.streak?.bestStreak || 0,
+        p.streak?.bestStreak || 0
+      );
+
+      let lastActiveDate = existing.streak?.lastActiveDate || null;
+      if (p.streak?.lastActiveDate) {
+        if (!lastActiveDate || p.streak.lastActiveDate > lastActiveDate) {
+          lastActiveDate = p.streak.lastActiveDate;
+        }
       }
+
+      let currentStreak = Math.max(existing.streak?.currentStreak || 0, p.streak?.currentStreak || 0);
+      if (p.streak?.lastActiveDate && existing.streak?.lastActiveDate) {
+        if (p.streak.lastActiveDate > existing.streak.lastActiveDate) {
+          currentStreak = p.streak.currentStreak;
+        } else if (existing.streak.lastActiveDate > p.streak.lastActiveDate) {
+          currentStreak = existing.streak.currentStreak;
+        }
+      } else if (p.streak?.lastActiveDate && !existing.streak?.lastActiveDate) {
+        currentStreak = p.streak.currentStreak;
+      } else if (!p.streak?.lastActiveDate && existing.streak?.lastActiveDate) {
+        currentStreak = existing.streak.currentStreak;
+      }
+
+      const mergedXp = Math.max(
+        existing.gamification?.xp || 0,
+        p.gamification?.xp || 0
+      );
+
+      profileMap.set(p.id, {
+        ...existing,
+        name: isImportedNewer ? (p.name || existing.name) : existing.name,
+        avatarUrl: p.avatarUrl || existing.avatarUrl,
+        updatedAt: isImportedNewer ? p.updatedAt : existing.updatedAt,
+        streak: {
+          currentStreak,
+          bestStreak,
+          lastActiveDate,
+          activityHistory: mergedHistory,
+        },
+        gamification: {
+          xp: mergedXp,
+        },
+      });
     }
   }
 

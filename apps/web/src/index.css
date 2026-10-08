@@ -2453,6 +2453,58 @@ main {
 .sidebar-user-role {
   font-size: 0.7rem;
   color: var(--ink3);
+  font-weight: 600;
+}
+
+.sidebar-backup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.73rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.sidebar-action-btn:hover {
+  background-color: var(--blue-subtle);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.sidebar-action-btn.secondary:hover {
+  background-color: #FEF3C7;
+  border-color: #D97706;
+  color: #B45309;
+}
+
+.sidebar-toast-msg {
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: #ECFDF5;
+  border: 1px solid #10B981;
+  color: #065F46;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  animation: fadeInToast 0.2s ease;
+}
+
+@keyframes fadeInToast {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .sidebar-user-settings-icon {

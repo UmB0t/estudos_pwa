@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
 import { useProgression } from '../context/ProgressionContext';
 
@@ -19,7 +19,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile = false,
   onCloseMobile,
 }) => {
-  const { currentProfile, stats } = useProgression();
+  const { currentProfile, stats, exportData, importData } = useProgression();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
 
   const isDashboardActive = currentView === 'dashboard' || currentView === 'home';
   const isLessonActive = currentView === 'lesson' || currentView === 'exercise';
@@ -31,10 +33,57 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const totalCount = stats?.totalExercises ?? 19;
   const progressBadge = `${completedCount}/${totalCount}`;
 
+  // Métricas dinâmicas do perfil ativo
+  const streakDays = currentProfile?.streak?.currentStreak ?? 0;
+  const userXp = currentProfile?.gamification?.xp ?? 0;
+
   const handleNav = (view: AppView) => {
     onNavigate(view);
     if (onCloseMobile) {
       onCloseMobile();
+    }
+  };
+
+  const handleSaveJson = async () => {
+    try {
+      const json = await exportData(currentProfile?.id);
+      const safeName = (currentProfile?.name || 'aluno')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '-');
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vetor-perfil-${safeName}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupMessage('JSON exportado com sucesso!');
+      setTimeout(() => setBackupMessage(null), 3000);
+    } catch (err: unknown) {
+      setBackupMessage(err instanceof Error ? err.message : 'Falha ao exportar.');
+      setTimeout(() => setBackupMessage(null), 3000);
+    }
+  };
+
+  const handleImportJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const res = await importData(text);
+      setBackupMessage(`Restaurado (${res.profilesCount} perfis, ${res.progressCount} ex)!`);
+      setTimeout(() => setBackupMessage(null), 3500);
+    } catch (err: unknown) {
+      setBackupMessage(err instanceof Error ? err.message : 'Erro no JSON.');
+      setTimeout(() => setBackupMessage(null), 3500);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -133,38 +182,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </svg>
             </span>
             <span className="nav-item-text">Ranking</span>
-            <span className="nav-item-badge xp-highlight">Top 10</span>
+            <span className="nav-item-badge xp-highlight">{userXp > 0 ? `${userXp} XP` : 'Top 10'}</span>
           </button>
         </nav>
 
         {/* Rodapé do Sidebar */}
         <div className="sidebar-footer">
-          {/* Card com métrica de hábito */}
-          <div className="habit-metric-card">
+          {/* Card com métrica de hábito dinâmico */}
+          <div className="habit-metric-card" title={`Sequência atual: ${streakDays} dias consecutivos`}>
             <div className="habit-icon-wrap">
               <span className="habit-flame">🔥</span>
             </div>
             <div className="habit-info">
-              <span className="habit-title">14 dias</span>
+              <span className="habit-title">
+                {streakDays} {streakDays === 1 ? 'dia' : 'dias'}
+              </span>
               <span className="habit-subtitle">de sequência de estudo</span>
             </div>
             <div className="habit-progress-mini">
-              <div className="habit-bar-fill" style={{ width: '100%' }} />
+              <div
+                className="habit-bar-fill"
+                style={{ width: `${Math.min(100, Math.max(12, streakDays * 7))}%` }}
+              />
             </div>
           </div>
 
-          {/* Usuário / Perfil e Backup */}
+          {/* Atalhos Rápidos de Backup em JSON */}
+          <div className="sidebar-backup-actions">
+            <button
+              type="button"
+              className="sidebar-action-btn"
+              onClick={handleSaveJson}
+              title="Salvar Perfil em JSON"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Salvar Perfil em JSON</span>
+            </button>
+
+            <button
+              type="button"
+              className="sidebar-action-btn secondary"
+              onClick={() => fileInputRef.current?.click()}
+              title="Importar Perfil JSON"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Importar Perfil JSON</span>
+            </button>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json,application/json"
+              style={{ display: 'none' }}
+              onChange={handleImportJson}
+            />
+          </div>
+
+          {backupMessage && (
+            <div className="sidebar-toast-msg">{backupMessage}</div>
+          )}
+
+          {/* Usuário / Perfil e Backup Modal */}
           <button
             className="sidebar-user-btn"
             onClick={onOpenProfile}
-            title="Gerenciar perfil e backups"
+            title="Gerenciar perfil e alternar usuários"
           >
             <div className="sidebar-avatar">
               <span>{currentProfile?.name?.[0]?.toUpperCase() ?? 'E'}</span>
             </div>
             <div className="sidebar-user-meta">
               <span className="sidebar-user-name">{currentProfile?.name ?? 'Estudante'}</span>
-              <span className="sidebar-user-role">Perfil Ativo</span>
+              <span className="sidebar-user-role">{userXp} XP · Ativo</span>
             </div>
             <span className="sidebar-user-settings-icon">⚙️</span>
           </button>

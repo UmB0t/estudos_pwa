@@ -42,7 +42,7 @@ export const GuidedLessonPage: React.FC<GuidedLessonPageProps> = ({
   onNavigateToTracks,
 }) => {
   const { evaluateExercise, getDatasetPreview, status: engineStatus } = useSqlEngine();
-  const { recordAttempt, getExerciseProgress, refresh } = useProgression();
+  const { recordAttempt, recordDailyActivity, getExerciseProgress, refresh } = useProgression();
 
   // Abas do Tripé Pedagógico
   const [activeTab, setActiveTab] = useState<LessonTab>('concept');
@@ -444,7 +444,9 @@ export const GuidedLessonPage: React.FC<GuidedLessonPageProps> = ({
               <ConceptQuiz
                 questions={currentLesson.concept.quiz}
                 onQuizCompleted={() => {
-                  // Pode premiar pontos de XP
+                  recordDailyActivity(20).catch((err) => {
+                    console.error('[GuidedLessonPage] Erro ao registrar quiz:', err);
+                  });
                 }}
               />
 

@@ -18,100 +18,97 @@ interface RankingPageProps {
 export const RankingPage: React.FC<RankingPageProps> = ({ onBackToDashboard }) => {
   const { currentProfile, stats } = useProgression();
 
-  const userCompleted = stats?.completedExercises ?? 7;
-  // Cálculo dinâmico de XP do aluno atual baseado nas suas aulas concluídas
-  const userCalculatedXp = 1250 + userCompleted * 150;
+  const userXp = currentProfile?.gamification?.xp ?? 0;
+  const userStreak = currentProfile?.streak?.currentStreak ?? 0;
+  const userProgress = stats?.completionPercentage ?? 0;
+  const userName = currentProfile?.name ?? 'Você';
 
-  // Lista simulada da turma semanal
-  const rankingList: StudentRankingItem[] = [
+  // Colegas de turma com pontuações realistas de referência semanal
+  const classmates: Omit<StudentRankingItem, 'rank'>[] = [
     {
       id: 'student-1',
-      rank: 1,
       name: 'Camila Fernandes',
-      xp: 2850,
+      xp: 1850,
       streakDays: 21,
       progressPercent: 95,
     },
     {
       id: 'student-2',
-      rank: 2,
       name: 'Gabriel Rocha',
-      xp: 2620,
+      xp: 1420,
       streakDays: 18,
       progressPercent: 88,
     },
     {
       id: 'student-3',
-      rank: 3,
       name: 'Mariana Duarte',
-      xp: 2490,
+      xp: 1190,
       streakDays: 15,
       progressPercent: 82,
     },
     {
-      id: 'current-user',
-      rank: 4,
-      name: currentProfile?.name ?? 'Você',
-      xp: userCalculatedXp,
-      streakDays: 14,
-      progressPercent: stats?.completionPercentage ?? 68,
-      isCurrentUser: true,
-    },
-    {
       id: 'student-5',
-      rank: 5,
       name: 'Lucas Meneses',
-      xp: 2180,
+      xp: 880,
       streakDays: 12,
       progressPercent: 71,
     },
     {
       id: 'student-6',
-      rank: 6,
       name: 'Beatriz Vasconcelos',
-      xp: 1950,
+      xp: 650,
       streakDays: 9,
       progressPercent: 64,
     },
     {
       id: 'student-7',
-      rank: 7,
       name: 'Rodrigo Alves',
-      xp: 1780,
+      xp: 420,
       streakDays: 8,
-      progressPercent: 58,
+      progressPercent: 48,
     },
     {
       id: 'student-8',
-      rank: 8,
       name: 'Fernanda Lima',
-      xp: 1540,
-      streakDays: 6,
-      progressPercent: 50,
+      xp: 250,
+      streakDays: 5,
+      progressPercent: 35,
     },
     {
       id: 'student-9',
-      rank: 9,
       name: 'Thiago Martins',
-      xp: 1320,
-      streakDays: 5,
-      progressPercent: 44,
+      xp: 100,
+      streakDays: 3,
+      progressPercent: 20,
     },
     {
       id: 'student-10',
-      rank: 10,
       name: 'Larissa Souza',
-      xp: 1100,
-      streakDays: 4,
-      progressPercent: 36,
+      xp: 50,
+      streakDays: 2,
+      progressPercent: 12,
     },
   ];
 
-  // Ordena por XP decrescente e recalcula rank
-  const sortedRanking = [...rankingList].sort((a, b) => b.xp - a.xp).map((item, idx) => ({
-    ...item,
-    rank: idx + 1,
-  }));
+  const rankingList: Omit<StudentRankingItem, 'rank'>[] = [
+    ...classmates,
+    {
+      id: 'current-user',
+      name: userName,
+      xp: userXp,
+      streakDays: userStreak,
+      progressPercent: userProgress,
+      isCurrentUser: true,
+    },
+  ];
+
+  // Ordena por XP decrescente e recalcula rank proporcional
+  const sortedRanking: StudentRankingItem[] = [...rankingList]
+    .sort((a, b) => b.xp - a.xp)
+    .map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+    }));
 
   const top3 = sortedRanking.slice(0, 3);
 

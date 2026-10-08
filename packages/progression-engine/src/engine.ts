@@ -3,6 +3,11 @@ import { MemoryStorageAdapter } from './adapters/memory-adapter.js';
 import { mergeDatasets, validateImportPayload } from './merge.js';
 import { calculateProgressStats, type ExerciseMeta } from './metrics.js';
 import {
+  ensureProfileDefaults,
+  getLocalDateString,
+  updateStreakAndActivity,
+} from './streak.js';
+import {
   type ExerciseAttemptRecord,
   type ExerciseProgress,
   type OverallStats,
@@ -23,6 +28,12 @@ export interface RecordAttemptParams {
   executionTimeMs?: number;
   hintsViewed?: number;
   profileId?: string;
+}
+
+export interface RecordDailyActivityParams {
+  profileId?: string;
+  xpEarned?: number;
+  date?: string;
 }
 
 export class ProgressionEngine {
@@ -53,6 +64,15 @@ export class ProgressionEngine {
         name: DEFAULT_PROFILE_NAME,
         createdAt: now,
         updatedAt: now,
+        streak: {
+          currentStreak: 0,
+          bestStreak: 0,
+          lastActiveDate: null,
+          activityHistory: [],
+        },
+        gamification: {
+          xp: 0,
+        },
       };
       await this.adapter.saveProfile(defaultProfile);
       await this.adapter.setActiveProfileId(defaultProfile.id);
@@ -66,7 +86,7 @@ export class ProgressionEngine {
     }
 
     const activeProfile = profiles.find((p) => p.id === activeId) ?? profiles[0]!;
-    return activeProfile;
+    return ensureProfileDefaults(activeProfile);
   }
 
   private async ensureInitialized(): Promise<void> {
@@ -79,7 +99,8 @@ export class ProgressionEngine {
 
   async getProfiles(): Promise<Profile[]> {
     await this.ensureInitialized();
-    return this.adapter.getProfiles();
+    const list = await this.adapter.getProfiles();
+    return list.map(ensureProfileDefaults);
   }
 
   async getActiveProfile(): Promise<Profile> {
@@ -89,13 +110,13 @@ export class ProgressionEngine {
 
     if (activeId) {
       const found = profiles.find((p) => p.id === activeId);
-      if (found) return found;
+      if (found) return ensureProfileDefaults(found);
     }
 
     if (profiles.length > 0) {
       const first = profiles[0]!;
       await this.adapter.setActiveProfileId(first.id);
-      return first;
+      return ensureProfileDefaults(first);
     }
 
     return this.init();
@@ -124,6 +145,15 @@ export class ProgressionEngine {
       name: trimmed,
       createdAt: now,
       updatedAt: now,
+      streak: {
+        currentStreak: 0,
+        bestStreak: 0,
+        lastActiveDate: null,
+        activityHistory: [],
+      },
+      gamification: {
+        xp: 0,
+      },
     };
 
     await this.adapter.saveProfile(newProfile);
@@ -146,6 +176,37 @@ export class ProgressionEngine {
         await this.adapter.setActiveProfileId(remaining[0]!.id);
       }
     }
+  }
+
+  /**
+   * Records daily activity, recalculates streak and increments XP.
+   */
+  async recordDailyActivity(params: RecordDailyActivityParams = {}): Promise<Profile> {
+    await this.ensureInitialized();
+    const profileId = params.profileId || (await this.getActiveProfile()).id;
+    const rawProfile = await this.adapter.getProfile(profileId);
+    if (!rawProfile) {
+      throw new Error(`Perfil com ID "${profileId}" não encontrado.`);
+    }
+
+    const profile = ensureProfileDefaults(rawProfile);
+    const activityDate = params.date || getLocalDateString();
+    const updatedStreak = updateStreakAndActivity(profile.streak, activityDate);
+
+    const xpEarned = params.xpEarned ?? 0;
+    const updatedGamification = {
+      xp: (profile.gamification?.xp ?? 0) + xpEarned,
+    };
+
+    const updatedProfile: Profile = {
+      ...profile,
+      updatedAt: new Date().toISOString(),
+      streak: updatedStreak,
+      gamification: updatedGamification,
+    };
+
+    await this.adapter.saveProfile(updatedProfile);
+    return updatedProfile;
   }
 
   // --- Progress Management ---
@@ -198,6 +259,12 @@ export class ProgressionEngine {
     };
 
     await this.adapter.saveProgress(updatedProgress);
+
+    // Se o exercício foi resolvido com sucesso, registra atividade diária e premia com XP (+50 XP)
+    if (isSuccess) {
+      await this.recordDailyActivity({ profileId, xpEarned: 50 });
+    }
+
     return updatedProgress;
   }
 

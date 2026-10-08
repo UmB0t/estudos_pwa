@@ -60,73 +60,102 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     .reduce((acc, cur) => acc + cur.hours, 0)
     .toFixed(1);
 
-  // Matriz do Heatmap (7 dias x 12 semanas = 84 blocos)
+  // Matriz do Heatmap (7 dias x 12 semanas = 84 blocos) calculada com activityHistory real
   const heatmapBlocks = useMemo(() => {
     const blocks: { id: number; level: number; dateLabel: string; activityCount: number }[] = [];
-    // Níveis de 0 a 4 simulando atividade realista
-    const levelsPattern = [
-      0, 1, 2, 3, 2, 0, 1, 3, 4, 2, 1, 0, 2, 3, 4, 4, 3, 1, 0, 1, 2, 3, 4, 2,
-      1, 2, 3, 1, 0, 2, 3, 4, 3, 2, 1, 0, 1, 3, 4, 2, 3, 4, 1, 2, 3, 0, 2, 4,
-      3, 1, 2, 4, 3, 2, 0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 2, 3, 4, 3, 2, 1, 2, 4,
-      3, 2, 1, 0, 2, 3, 4, 3, 2, 4, 3, 4,
-    ];
+    const history = currentProfile?.streak?.activityHistory ?? [];
+    const now = new Date();
 
-    for (let i = 0; i < 84; i++) {
-      const lvl = levelsPattern[i % levelsPattern.length] ?? 0;
+    // 84 blocos ordenados do mais antigo (83 dias atrás) até hoje
+    for (let i = 83; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${day}`;
+      const isToday = i === 0;
+
+      const hasActivity = history.includes(dateStr);
+      let level = 0;
+      let activityCount = 0;
+
+      if (hasActivity) {
+        // Nível 4 se for hoje, nível 3 para dias anteriores com atividade
+        level = isToday ? 4 : 3;
+        activityCount = isToday ? 3 : 2;
+      }
+
+      const dateLabel = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + (isToday ? ' (Hoje)' : '');
+
       blocks.push({
-        id: i,
-        level: lvl,
-        dateLabel: `Dia ${i + 1}`,
-        activityCount: lvl === 0 ? 0 : lvl * 3 + 1,
+        id: 83 - i,
+        level,
+        dateLabel,
+        activityCount,
       });
     }
-    return blocks;
-  }, []);
 
-  // Badges de Conquistas
+    return blocks;
+  }, [currentProfile?.streak?.activityHistory]);
+
+  // Badges de Conquistas dinâmicas
+  const bestStreak = currentProfile?.streak?.bestStreak ?? 0;
+  const completedLabs = stats?.completedExercises ?? 0;
+  const totalAttempts = stats?.totalAttempts ?? 0;
+
+  const hasIndexLesson = !!getExerciseProgress('sql-07-indices-btree')?.completed;
+  const hasSecurityLesson = !!getExerciseProgress('sec-01-sql-injection-bypass')?.completed;
+  const hasDockerLesson = !!getExerciseProgress('docker-01-container-run')?.completed;
+
   const achievements = [
     {
       id: 'streak-14',
       icon: '🔥',
       title: '14d Sequência',
       desc: '14 dias consecutivos de estudo ativo',
-      unlocked: true,
+      unlocked: bestStreak >= 14,
+      progress: bestStreak >= 14 ? undefined : `${bestStreak}/14 dias`,
     },
     {
       id: 'sql-100',
       icon: '⚡',
       title: '100 consultas SQL',
       desc: 'Mais de 100 queries executadas no PGlite',
-      unlocked: true,
+      unlocked: totalAttempts >= 100,
+      progress: totalAttempts >= 100 ? undefined : `${totalAttempts}/100 queries`,
     },
     {
       id: 'labs-10',
       icon: '🧪',
       title: '10 laboratórios',
       desc: '10 desafios práticos validados',
-      unlocked: true,
+      unlocked: completedLabs >= 10,
+      progress: completedLabs >= 10 ? undefined : `${completedLabs}/10 labs`,
     },
     {
       id: 'indexes-master',
       icon: '🎯',
       title: 'Mestre de Índices',
       desc: 'Otimização com índices B-Tree e scans',
-      unlocked: false,
-      progress: '70%',
+      unlocked: hasIndexLesson,
+      progress: hasIndexLesson ? undefined : 'Pendente',
     },
     {
       id: 'sec-guard',
       icon: '🛡️',
       title: 'Guarda de Injeção',
       desc: 'Mitigação completa de SQL Injection',
-      unlocked: false,
+      unlocked: hasSecurityLesson,
+      progress: hasSecurityLesson ? undefined : 'Pendente',
     },
     {
       id: 'cloud-deploy',
       icon: '☁️',
       title: 'Container Pro',
       desc: 'Gerenciamento avançado de Docker',
-      unlocked: false,
+      unlocked: hasDockerLesson,
+      progress: hasDockerLesson ? undefined : 'Pendente',
     },
   ];
 

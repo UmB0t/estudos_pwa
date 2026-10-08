@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useProgression } from '../context/ProgressionContext';
 
 export interface Flashcard {
   id: string;
@@ -105,6 +106,7 @@ interface ReviewPageProps {
 }
 
 export const ReviewPage: React.FC<ReviewPageProps> = ({ onBackToDashboard }) => {
+  const { recordDailyActivity } = useProgression();
   const [cards] = useState<Flashcard[]>(DEFAULT_FLASHCARDS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -145,6 +147,9 @@ export const ReviewPage: React.FC<ReviewPageProps> = ({ onBackToDashboard }) => 
       setCurrentIndex((prev) => prev + 1);
     } else {
       setIsCompleted(true);
+      recordDailyActivity(30).catch((err) => {
+        console.error('[ReviewPage] Erro ao registrar atividade:', err);
+      });
     }
   };
 

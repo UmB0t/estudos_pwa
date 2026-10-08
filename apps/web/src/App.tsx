@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { getExerciseProgress } = useProgression();
+  const { getExerciseProgress, currentProfile } = useProgression();
 
   // Seleciona lição e redireciona para a visão de aula guiada
   const handleSelectLesson = (lessonId: string) => {
@@ -55,6 +55,8 @@ const AppContent: React.FC = () => {
     return `${completed}/${currentTrack.lessons.length}`;
   }, [currentTrack, getExerciseProgress]);
 
+  const mobileStreak = currentProfile?.streak?.currentStreak ?? 0;
+
   return (
     <div className="vetor-app-container">
       {/* Barra de Topo exclusiva para Mobile */}
@@ -77,8 +79,8 @@ const AppContent: React.FC = () => {
           <span className="brand-vetor-title">Vetor</span>
         </div>
 
-        <div className="mobile-streak-pill">
-          <span>🔥 14d</span>
+        <div className="mobile-streak-pill" title={`Sequência de estudo: ${mobileStreak} dias`}>
+          <span>🔥 {mobileStreak}d</span>
         </div>
       </div>
 
