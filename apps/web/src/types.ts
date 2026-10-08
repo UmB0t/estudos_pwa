@@ -1,6 +1,14 @@
 import type { EvaluationResult } from '@lab/shared';
 
-export type AppView = 'home' | 'exercise' | 'reference';
+export type AppView =
+  | 'dashboard'
+  | 'lesson'
+  | 'tracks'
+  | 'review'
+  | 'ranking'
+  | 'home'
+  | 'exercise'
+  | 'reference';
 
 export interface ExerciseState {
   code: string;
